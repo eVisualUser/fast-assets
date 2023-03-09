@@ -117,6 +117,21 @@ impl DecompressionCache {
         None
     }
 
+    /// Return a ref of the data and auto manage the cache
+    pub fn get_data_ref(&mut self, filename: &str) -> Option<&Option<Vec<u8>>> {
+        for file in self.files.iter_mut() {
+            if file.origin.to_string_lossy() == filename {
+                if file.data.is_none() {
+                    if file.cache.is_some() {
+                        file.load_cache();
+                    }
+                }
+                return Some(&file.data);
+            }
+        }
+        None
+    }
+
     /// Return a &mut of the data and auto manage the cache
     pub fn get_data_mut(&mut self, filename: &str) -> Option<&mut Option<Vec<u8>>> {
         for file in self.files.iter_mut() {

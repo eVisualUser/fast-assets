@@ -97,10 +97,9 @@ impl Index {
     }
 
     pub fn get_path(&self, filename: &str) -> Option<String> {
-        let mut result = Arc::new(Mutex::new(Option::<String>::None));
+        let result = Arc::new(Mutex::new(Option::<String>::None));
 
         self.files.par_iter().for_each(|path|{
-            println!("Path: {:?}", path);
             let mut result = result.lock().unwrap();
             if path.file_name().unwrap().to_string_lossy() == filename {
                 *result = Some(path.to_string_lossy().to_string());

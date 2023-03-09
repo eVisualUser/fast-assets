@@ -2,7 +2,7 @@ use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::index::Index;
 use crate::decompression_cache::{DecompressionCache};
-use std::io::Read;
+use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -14,12 +14,28 @@ pub struct File {
 }
 
 impl File {
-    pub fn load(&mut self) {
+    pub fn load(&mut self) -> std::io::Result<()> {
         if self.path.exists() {
             let mut buffer = Vec::<u8>::new();
-            std::fs::File::options().read(true).open(self.path.clone()).unwrap().read_to_end(&mut buffer).unwrap();
+            let mut file = std::fs::File::options().read(true).open(self.path.clone())?;
+            file.read_to_end(&mut buffer)?;
+            file.flush()?;
             self.data = Some(buffer);
         }
+        Ok(())
+    }
+
+    pub fn save(&mut self) -> std::io::Result<()> {
+        let mut file = std::fs::File::options().write(true).truncate(true).create(true).open(self.path.clone())?;
+        match &self.data {
+            Some(data) => {
+                file.write_all(data.as_slice())?;
+                file.flush()?;
+            }
+            None => (),
+        }
+
+        Ok(())
     }
 }
 
@@ -39,7 +55,7 @@ impl AssetsManager {
         }
     }
 
-    pub fn load(&mut self, path: &str) {
+    pub fn load(&mut self, path: &str) -> std::io::Result<()> {
         let path = self.index.get_path(path);
         match path {
             Some(path) => {
@@ -89,7 +105,7 @@ impl AssetsManager {
                     None => {
                         let mut file = File::default();
                         file.path = path;
-                        file.load();
+                        file.load()?;
                         self.files.push(file);
                     }
                 }
@@ -98,6 +114,8 @@ impl AssetsManager {
                 
             }
         }
+
+        Ok(())
     }
 
     pub fn unload(&mut self, path: &str, cache_decompressed: bool) {
@@ -118,6 +136,7 @@ impl AssetsManager {
 
     pub fn remove(&mut self, path: &str) {
         for i in 0..self.files.len() {
+            if i < self.files.len() {
             let file_path = self.files[i].path.to_string_lossy();
             if path == file_path {
                 if self.files[i].from_archive {
@@ -125,6 +144,7 @@ impl AssetsManager {
                 }
                 self.files.remove(i);
             }
+        }
         }
     }
 
@@ -152,18 +172,43 @@ impl AssetsManager {
         }
     }
 
+    pub fn get_ref(&mut self, path: &str) -> Option<&Option<Vec<u8>>> {
+        let in_cache = self.cache.get_data_ref(path);
+        match in_cache {
+            Some(_) => return in_cache,
+            None => {
+                for file in self.files.iter_mut() {
+                    if file.path.file_name().unwrap().to_string_lossy().to_string() == path {
+                        return Some(&file.data);
+                    }
+                }
+            }
+        }
+        None
+    }
+
     pub fn get_mut(&mut self, path: &str) -> Option<&mut Option<Vec<u8>>> {
         let in_cache = self.cache.get_data_mut(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
                 for file in self.files.iter_mut() {
-                    if file.path.to_string_lossy().to_string() == path {
+                    if file.path.file_name().unwrap().to_string_lossy().to_string() == path {
                         return Some(&mut file.data);
                     }
                 }
             }
         }
         None
+    }
+
+    pub fn save(&mut self, filename: &str) -> std::io::Result<()> {
+        for file in self.files.iter_mut() {
+            if file.path.file_name().unwrap().to_string_lossy() == filename {
+                return file.save();
+            }
+        }
+
+        Ok(())
     }
 }

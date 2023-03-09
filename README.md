@@ -4,10 +4,11 @@ Easy to use assets manager for Rust
 
 ## Features
 
-- [ ] Search for files
+- [X] Search for files
 - [X] Index files
-- [ ] Load assets
+- [X] Load assets
 - [X] Load compressed assets (decompress the assets)
+- [ ] Write files (not compressed only)
 
 ## Compression Support
 
