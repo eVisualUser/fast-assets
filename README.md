@@ -95,6 +95,18 @@ manager.get_mut("text.csv").unwrap().unwrap();
 
 If the file was put in cache it will automatically reload it.
 
+### Saving Data
+
+⚠️ This features encounters io authorizations issues ⚠️
+
+Only saves data of file that are not from compressed files.
+Return a simple std::io::Result<()> as result.
+If the file does not exist anymore it will create a new file.
+
+```rust
+manager.save("text.csv").unwrap();
+```
+
 ### Remove a file reference
 
 In the manager and DecompressionCache each file loaded will have his reference,
