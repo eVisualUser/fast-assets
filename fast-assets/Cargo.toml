@@ -2,7 +2,7 @@
 name = "fast-assets"
 version = "0.1.0"
 edition = "2021"
-readme = "../README.md"
+readme = "README.md"
 description = "Easy to use Assets Manager"
 tags = ["assets", "zip"]
 repository = "https://github.com/eVisualUser/fast-assets"
