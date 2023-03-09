@@ -8,7 +8,7 @@ Easy to use assets manager for Rust
 - [X] Index files
 - [X] Load assets
 - [X] Load compressed assets (decompress the assets)
-- [ ] Write files (not compressed only)
+- [X] Write files (not compressed only)
 
 ## Compression Support
 
