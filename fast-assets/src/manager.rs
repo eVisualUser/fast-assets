@@ -1,5 +1,3 @@
-use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
-
 use crate::index::Index;
 use crate::decompression_cache::{DecompressionCache};
 use std::io::{Read, Write};
@@ -26,11 +24,16 @@ impl File {
     }
 
     pub fn save(&mut self) -> std::io::Result<()> {
+        println!("{:?}", self.path);
         let mut file = std::fs::File::options().write(true).truncate(true).create(true).open(self.path.clone())?;
+        println!("File Opened");
         match &self.data {
             Some(data) => {
+                println!("Try write");
                 file.write_all(data.as_slice())?;
+                println!("Success Write");
                 file.flush()?;
+                println!("Success flush");
             }
             None => (),
         }
@@ -200,6 +203,16 @@ impl AssetsManager {
             }
         }
         None
+    }
+
+    pub fn have_file(&self, filename: &str) -> bool {
+        for file in self.files.iter() {
+            if file.path.file_name().unwrap().to_string_lossy() == filename {
+                return true;
+            }
+        }
+
+        return self.index.have_file(filename);
     }
 
     pub fn save(&mut self, filename: &str) -> std::io::Result<()> {

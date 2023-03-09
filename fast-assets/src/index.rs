@@ -10,6 +10,7 @@ pub struct Index {
     pub files: Vec<PathBuf>,
     pub filter: Regex,
     current_pos: usize,
+    csv_separator: char,
 }
 
 impl Index {
@@ -19,7 +20,12 @@ impl Index {
             files: Vec::new(),
             filter: Regex::new(filter).unwrap(),
             current_pos: 0,
+            csv_separator: ';',
         }
+    }
+
+    pub fn set_csv_separator(&mut self, new_separator: char) {
+        self.csv_separator = new_separator;
     }
 
     pub fn search(&mut self) {
@@ -74,6 +80,7 @@ impl Index {
                 match ext.to_string_lossy().to_string().as_str() {
                     "csv" => {
                         let mut csv = pro_csv::CSV::default();
+                        csv.set_sperator_char(self.csv_separator);
                         csv.load_from_file(&file.to_string_lossy().to_string());
                         let buffer = Arc::new(Mutex::new(Vec::<PathBuf>::new()));
                         csv.par_bridge().for_each(|mut line|{
@@ -108,6 +115,15 @@ impl Index {
 
         let result = result.lock().unwrap();
         result.clone()
+    }
+
+    pub fn have_file(&self, filename: &str) -> bool {
+        for file in self.files.iter() {
+            if file.file_name().unwrap().to_string_lossy() == filename {
+                return true;
+            }
+        }
+        false
     }
 }
 

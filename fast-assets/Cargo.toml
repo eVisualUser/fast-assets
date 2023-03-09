@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 readme = "README.md"
 description = "Easy to use Assets Manager"
-tags = ["assets", "zip"]
+keywords = ["assets", "zip"]
 repository = "https://github.com/eVisualUser/fast-assets"
 license = "MIT"
 
@@ -13,6 +13,7 @@ regex = "1.7.1"
 rayon = "1.7.0"
 
 # Files Formats
+json = "0.12.4"
 pro_csv = "0.1.1"
 
 # Compression Formats

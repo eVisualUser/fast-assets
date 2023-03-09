@@ -15,7 +15,7 @@ All unchecked features are planned.
 - [X] Load assets
 - [X] Load compressed assets
 - [ ] Write files (not compressed only)
-- [ ] Dependencie Checker
+- [X] Dependencie Checker
 
 ## Compression Support
 
