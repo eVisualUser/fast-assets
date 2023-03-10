@@ -32,11 +32,12 @@ Used to load files compressed
 ```rust
 let mut index = fast_assets::index::Index::new("./", "\\w+\\.rs");
 index.add_from_file("index/index.csv");
+index.set_csv_separator('/');
 ```
 
 ```csv
-folder;subfolder;file.txt
-archives;archive.zip;file.txt
+folder/subfolder/file.txt
+archives/archive.zip/file.txt
 ```
 
 ## Getting Started
@@ -64,6 +65,11 @@ let mut manager = fast_assets::manager::AssetsManager::new(index, dc);
 manager.load("index.json").unwrap();
 // Load a not compressed file
 manager.load("text.csv").unwrap();
+
+// Load a not compressed file using full path
+manager.load("fr\\text.csv").unwrap();
+// Load a compressed file using full path
+manager.load("lang.zip/fr/text.csv").unwrap();
 ```
 
 ```rust
@@ -83,14 +89,26 @@ manager.unload("text.csv", false);
 ### Accessing Data
 
 You must know that two thing can failed:
-1 - File not indexed
-2 - File not exists
+
+- File not indexed
+- File not exists
 
 So you need to passthrough them to access the data:
 
 ```rust
 manager.get("text.csv").unwrap().unwrap();
+manager.get_ref("text.csv").unwrap().unwrap();
 manager.get_mut("text.csv").unwrap().unwrap();
+
+// In the case where you have multiple file with the same name:
+// When not compressed
+manager.get("en\\text.csv").unwrap();
+manager.get_ref("fr\\text.csv").unwrap();
+manager.get_mut("it\\text.csv").unwrap();
+// When compressed (relative to the compressed directory)
+manager.get("en/text.csv").unwrap();
+manager.get_ref("fr/text.csv").unwrap();
+manager.get_mut("it/text.csv").unwrap();
 ```
 
 If the file was put in cache it will automatically reload it.

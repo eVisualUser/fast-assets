@@ -2,7 +2,6 @@ use crate::index::Index;
 use crate::decompression_cache::{DecompressionCache};
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 
 #[derive(Default, Debug)]
 pub struct File {
@@ -58,8 +57,13 @@ impl AssetsManager {
         }
     }
 
-    pub fn load(&mut self, path: &str) -> std::io::Result<()> {
-        let path = self.index.get_path(path);
+    pub fn load(&mut self, base_path: &str) -> std::io::Result<()> {
+        let mut path = Option::<String>::None;
+        if !(base_path.contains('\\') || base_path.contains('/')) {
+            path = self.index.get_path(base_path);
+        } else {
+            path = Some(String::from(base_path));
+        }
         match path {
             Some(path) => {
                 let path = PathBuf::from(path);
@@ -151,9 +155,19 @@ impl AssetsManager {
         }
     }
 
-    pub fn find_file_index(&self, name: &str) -> Option<usize> {
+    pub fn find_file_index(&self, filename: &str) -> Option<usize> {
         for i in 0..self.files.len() {
-            if self.files[i].path.file_name().unwrap().to_string_lossy() == name {
+            if self.files[i].path.file_name().unwrap().to_string_lossy() == filename {
+                return Some(i);
+            }
+        }
+
+        None
+    }
+
+    pub fn find_file_index_using_full_path(&self, path: &str) -> Option<usize> {
+        for i in 0..self.files.len() {
+            if self.files[i].path.to_string_lossy() == path {
                 return Some(i);
             }
         }
@@ -166,7 +180,12 @@ impl AssetsManager {
         match in_cache {
             Some(_) => return in_cache,
             None => {
-                let index = self.find_file_index(path);
+                let mut index = Option::<usize>::None;
+                if path.contains('\\') || path.contains('/') {
+                    index = self.find_file_index_using_full_path(path);
+                } else {
+                    index = self.find_file_index(path);
+                }
                 if index.is_none() {
                     return None;
                 }
@@ -176,12 +195,15 @@ impl AssetsManager {
     }
 
     pub fn get_ref(&mut self, path: &str) -> Option<&Option<Vec<u8>>> {
+        let is_full_path = path.contains('\\') || path.contains('/'); 
         let in_cache = self.cache.get_data_ref(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
                 for file in self.files.iter_mut() {
-                    if file.path.file_name().unwrap().to_string_lossy().to_string() == path {
+                    if is_full_path && file.path.to_string_lossy() == path {
+                            return Some(&file.data);
+                    } else if file.path.file_name().unwrap().to_string_lossy() == path {
                         return Some(&file.data);
                     }
                 }
@@ -191,14 +213,17 @@ impl AssetsManager {
     }
 
     pub fn get_mut(&mut self, path: &str) -> Option<&mut Option<Vec<u8>>> {
+        let is_full_path = path.contains('\\') || path.contains('/'); 
         let in_cache = self.cache.get_data_mut(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
                 for file in self.files.iter_mut() {
-                    if file.path.file_name().unwrap().to_string_lossy().to_string() == path {
-                        return Some(&mut file.data);
-                    }
+                if is_full_path && file.path.to_string_lossy() == path {
+                    return Some(&mut file.data);
+                } else if file.path.file_name().unwrap().to_string_lossy() == path {
+                    return Some(&mut file.data);
+                }
                 }
             }
         }
