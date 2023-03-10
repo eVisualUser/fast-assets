@@ -1,4 +1,4 @@
-use std::{path::PathBuf, borrow::{Borrow, BorrowMut}};
+use std::path::PathBuf;
 use regex::Regex;
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};

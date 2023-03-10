@@ -15,7 +15,7 @@ All unchecked features are planned.
 - [X] Load assets
 - [X] Load compressed assets
 - [ ] Write files (not compressed only)
-- [ ] Dependencie Checker
+- [X] Dependencie Checker
 
 ## Compression Support
 
@@ -26,6 +26,7 @@ All unchecked features are planned.
 Used to load files compressed
 
 - [X] From CSV file
+- [ ] From JSON file
 
 ### Example
 
