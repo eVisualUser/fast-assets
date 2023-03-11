@@ -1,5 +1,6 @@
-use crate::decompression_cache::DecompressionCache;
+use crate::decompression_manager::DecompressionManager;
 use crate::index::Index;
+use crate::process_pass::ProcessPass;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
@@ -49,26 +50,47 @@ impl File {
 #[derive(Debug)]
 pub struct AssetsManager {
     index: Index,
-    cache: DecompressionCache,
+    cache: DecompressionManager,
     files: Vec<File>,
+    process_pass_list: Vec<Box<dyn ProcessPass>>,
+    compression_formats: Vec<String>,
 }
 
 impl AssetsManager {
-    pub fn new(index: Index, cache: DecompressionCache) -> Self {
+    pub fn new(index: Index, cache: DecompressionManager) -> Self {
         Self {
             index,
             cache,
             files: Vec::new(),
+            process_pass_list: Vec::new(),
+            compression_formats: vec![String::from("zip")],
         }
     }
 
+    pub fn add_compression_formats(&mut self, format: &str) {
+        self.compression_formats.push(String::from(format));
+    }
+
+    pub fn add_process_pass(&mut self, process_pass: Box<dyn ProcessPass>) {
+        self.process_pass_list.push(process_pass);
+    }
+
     pub fn load(&mut self, base_path: &str) -> std::io::Result<()> {
-        let path;
+        let mut path;
         if !(base_path.contains('\\') || base_path.contains('/')) {
             path = self.index.get_path(base_path);
         } else {
             path = Some(String::from(base_path));
         }
+
+        for i in 0..self.process_pass_list.len() {
+            let mut process_pass = self.process_pass_list.swap_remove(i);
+            if !process_pass.on_load(self, &mut path) {
+                return Ok(());
+            }
+            self.process_pass_list.insert(i, process_pass);
+        }
+
         match path {
             Some(path) => {
                 let path = PathBuf::from(path);
@@ -85,8 +107,10 @@ impl AssetsManager {
                         path_in_archive.push(cmp.to_string());
                     }
 
-                    if cmp.ends_with(".zip") {
-                        in_archive = Some(i.as_os_str().to_string_lossy().to_string());
+                    for fmt in self.compression_formats.iter() {
+                        if cmp.ends_with(&format!(".{}", fmt)) {
+                            in_archive = Some(i.as_os_str().to_string_lossy().to_string());
+                        }
                     }
                 }
 
@@ -108,7 +132,11 @@ impl AssetsManager {
                         path.pop();
                         file.path = PathBuf::from(path.clone());
 
-                        self.cache.load_archive(&archive, Some(vec![&path]));
+                        self.cache.load_archive(
+                            &archive,
+                            Some(vec![&path]),
+                            &mut self.process_pass_list,
+                        );
 
                         file.from_archive = true;
                         file.path = PathBuf::from(path);
@@ -128,7 +156,15 @@ impl AssetsManager {
         Ok(())
     }
 
-    pub fn unload(&mut self, path: &str, cache_decompressed: bool) {
+    pub fn unload(&mut self, mut path: &str, mut cache_decompressed: bool) {
+        for i in 0..self.process_pass_list.len() {
+            let mut process_pass = self.process_pass_list.swap_remove(i);
+            if !process_pass.on_unload(self, &mut path, &mut cache_decompressed) {
+                return;
+            }
+            self.process_pass_list.insert(i, process_pass);
+        }
+
         for file in self.files.iter_mut() {
             let file_path = file.path.to_string_lossy();
             if path == file_path {
@@ -144,7 +180,15 @@ impl AssetsManager {
         }
     }
 
-    pub fn remove(&mut self, path: &str) {
+    pub fn remove(&mut self, mut path: &str) {
+        for i in 0..self.process_pass_list.len() {
+            let mut process_pass = self.process_pass_list.swap_remove(i);
+            if !process_pass.on_remove(self, &mut path) {
+                return;
+            }
+            self.process_pass_list.insert(i, process_pass);
+        }
+
         for i in 0..self.files.len() {
             if i < self.files.len() {
                 let file_path = self.files[i].path.to_string_lossy();
@@ -251,5 +295,9 @@ impl AssetsManager {
         }
 
         Ok(())
+    }
+
+    pub fn get_files_matching_regex(&self, regex: &str) -> Vec<PathBuf> {
+        self.index.regex_search(regex)
     }
 }

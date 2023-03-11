@@ -15,7 +15,7 @@ impl Dependencie {
 
 #[derive(Default, Debug)]
 pub struct DependencieManager {
-      deps: Vec<Dependencie>,
+    deps: Vec<Dependencie>,
 }
 
 impl DependencieManager {
@@ -70,7 +70,7 @@ impl DependencieManager {
 
         for dep in self.deps.iter() {
             if dep.source == filename {
-                dep.missing_list.iter().for_each(|file|{
+                dep.missing_list.iter().for_each(|file| {
                     result.push(file.clone());
                 });
             }
