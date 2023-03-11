@@ -142,6 +142,17 @@ impl Index {
 
         false
     }
+
+    pub fn regex_search(&self, filter: &str) -> Vec<PathBuf> {
+        let mut result = Vec::<PathBuf>::new();
+        let regex = regex::Regex::new(filter).unwrap();
+        for file in self.files.iter() {
+            if regex.is_match(&file.to_string_lossy()) {
+                result.push(file.clone());
+            }
+        }
+        result
+    }
 }
 
 impl Iterator for Index {

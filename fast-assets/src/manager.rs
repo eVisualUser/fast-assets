@@ -20,25 +20,24 @@ impl File {
             file.read_to_end(&mut buffer)?;
             file.flush()?;
             self.data = Some(buffer);
+            return Ok(());
         }
-        Ok(())
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            format!("File \"{:?}\" not found", self.path),
+        ))
     }
 
     pub fn save(&mut self) -> std::io::Result<()> {
-        println!("{:?}", self.path);
         let mut file = std::fs::File::options()
             .write(true)
             .truncate(true)
             .create(true)
             .open(self.path.clone())?;
-        println!("File Opened");
         match &self.data {
             Some(data) => {
-                println!("Try write");
                 file.write_all(data.as_slice())?;
-                println!("Success Write");
                 file.flush()?;
-                println!("Success flush");
             }
             None => (),
         }
