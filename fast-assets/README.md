@@ -136,3 +136,51 @@ manager.remove("text.csv").unwrap().unwrap();
 
 // Tips: You don't need to unload before excepted if you need to put in cache
 ```
+
+### Dependencie Checker
+
+The dependency checker (DependencieManager), it's job is to search the not indexed files in the manager.
+
+#### JSON File source
+
+As you can see in the example below, the JSON file define the dependencies for some files.
+The organization of the JSON file is not recursive, so you cannot define dependencies of a file into the dependencies of another file.
+
+```json
+{
+    "text.csv": [
+        "index.json",
+        "other.csv"
+    ],
+    "index.json": [
+        "text.csv"
+    ]
+}
+```
+
+#### Initialize the dependencies
+
+```rust
+// Create DependencieManager object
+let mut dependencie_manager = DependencieManager::default();
+// Load a file containing the dependencies required
+dependencie_manager.load_file(&mut manager, "deps.json");
+```
+
+#### Let's check the dependencies
+
+Now you have to load the dependencies, and to check them you need to call three commands:
+
+- update
+- check_if_valid
+- get_missing_dependencies
+
+```rust
+
+// Take a look in the manager to get if a dependency is missing
+dependencie_manager.update();
+// Return true if all dependencies are present
+dependencie_manager.check_if_valid("text.csv");
+// Get all the missing dependencies
+dependencie_manager.get_missing_dependencies("text.csv");
+```
