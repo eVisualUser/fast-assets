@@ -1,6 +1,6 @@
-use std::path::PathBuf;
-use regex::Regex;
 use rayon::prelude::*;
+use regex::Regex;
+use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
@@ -32,10 +32,6 @@ impl Index {
         self.add_files(self.search_in_dir(self.root.to_path_buf()));
     }
 
-    pub async fn async_search(&mut self) {
-        self.add_files(self.search_in_dir(self.root.to_path_buf()));
-    }
-
     pub fn add_file(&mut self, file: PathBuf) {
         self.files.push(file);
     }
@@ -48,20 +44,23 @@ impl Index {
         self.files.clear();
     }
 
-    pub fn async_search_in_dir(&mut self, dir: &PathBuf) -> Vec<PathBuf> {
-        self.search_in_dir(dir.to_path_buf())
-    }
-
     pub fn search_in_dir(&self, path: PathBuf) -> Vec<PathBuf> {
         let read_dir = path.read_dir().unwrap();
 
         let result = Arc::new(Mutex::new(Vec::<PathBuf>::new()));
 
-        read_dir.par_bridge().for_each(|item|{
+        read_dir.par_bridge().for_each(|item| {
             let mut result = result.lock().unwrap();
             let item = item.unwrap();
             if item.path().is_file() {
-                if self.filter.is_match(&item.path().file_name().unwrap().to_string_lossy().to_string()) {
+                if self.filter.is_match(
+                    &item
+                        .path()
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .to_string(),
+                ) {
                     result.push(item.path());
                 }
             } else if item.path().is_dir() {
@@ -76,29 +75,27 @@ impl Index {
     pub fn add_from_file(&mut self, file: &str) {
         let file = PathBuf::from(file);
         match file.extension() {
-            Some(ext) => {
-                match ext.to_string_lossy().to_string().as_str() {
-                    "csv" => {
-                        let mut csv = pro_csv::CSV::default();
-                        csv.set_sperator_char(self.csv_separator);
-                        csv.load_from_file(&file.to_string_lossy().to_string());
-                        let buffer = Arc::new(Mutex::new(Vec::<PathBuf>::new()));
-                        csv.par_bridge().for_each(|mut line|{
-                            let mut buffer = buffer.lock().unwrap();
-                            let mut path = String::new();
-                            for element in 0..line.len()-1 {
-                                path.push_str(&format!("{}\\", line[element]));
-                            }
-                            line.last_mut().unwrap().pop();
-                            path.push_str(&line.last().unwrap());
-                            buffer.push(PathBuf::from(path));
-                        });
+            Some(ext) => match ext.to_string_lossy().to_string().as_str() {
+                "csv" => {
+                    let mut csv = pro_csv::CSV::default();
+                    csv.set_sperator_char(self.csv_separator);
+                    csv.load_from_file(&file.to_string_lossy().to_string());
+                    let buffer = Arc::new(Mutex::new(Vec::<PathBuf>::new()));
+                    csv.par_bridge().for_each(|mut line| {
                         let mut buffer = buffer.lock().unwrap();
-                        self.files.append(&mut buffer);
-                    }
-                    _ => (),
+                        let mut path = String::new();
+                        for element in 0..line.len() - 1 {
+                            path.push_str(&format!("{}/", line[element]));
+                        }
+                        line.last_mut().unwrap().pop();
+                        path.push_str(&line.last().unwrap());
+                        buffer.push(PathBuf::from(path));
+                    });
+                    let mut buffer = buffer.lock().unwrap();
+                    self.files.append(&mut buffer);
                 }
-            }
+                _ => (),
+            },
             None => (),
         }
     }
@@ -106,7 +103,7 @@ impl Index {
     pub fn get_path(&self, filename: &str) -> Option<String> {
         let result = Arc::new(Mutex::new(Option::<String>::None));
 
-        self.files.par_iter().for_each(|path|{
+        self.files.par_iter().for_each(|path| {
             let mut result = result.lock().unwrap();
             if path.file_name().unwrap().to_string_lossy() == filename {
                 *result = Some(path.to_string_lossy().to_string());
@@ -118,11 +115,31 @@ impl Index {
     }
 
     pub fn have_file(&self, filename: &str) -> bool {
+        let using_full_path = filename.contains("\\") || filename.contains("/");
         for file in self.files.iter() {
-            if file.file_name().unwrap().to_string_lossy() == filename {
+            if !using_full_path && file.file_name().unwrap().to_string_lossy() == filename {
+                return true;
+            } else if using_full_path && file.to_string_lossy() == filename {
                 return true;
             }
         }
+        false
+    }
+
+    /// Remove the index, and return if it was found
+    pub fn remove_indexed_file(&mut self, filename: &str) -> bool {
+        let using_full_path = filename.contains("\\") || filename.contains("/");
+        for i in 0..self.files.len() {
+            if !using_full_path && self.files[i].file_name().unwrap().to_string_lossy() == filename
+            {
+                self.files.remove(i);
+                return true;
+            } else if using_full_path && self.files[i].to_string_lossy() == filename {
+                self.files.remove(i);
+                return true;
+            }
+        }
+
         false
     }
 }

@@ -1,5 +1,5 @@
+use crate::decompression_cache::DecompressionCache;
 use crate::index::Index;
-use crate::decompression_cache::{DecompressionCache};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
@@ -14,7 +14,9 @@ impl File {
     pub fn load(&mut self) -> std::io::Result<()> {
         if self.path.exists() {
             let mut buffer = Vec::<u8>::new();
-            let mut file = std::fs::File::options().read(true).open(self.path.clone())?;
+            let mut file = std::fs::File::options()
+                .read(true)
+                .open(self.path.clone())?;
             file.read_to_end(&mut buffer)?;
             file.flush()?;
             self.data = Some(buffer);
@@ -24,7 +26,11 @@ impl File {
 
     pub fn save(&mut self) -> std::io::Result<()> {
         println!("{:?}", self.path);
-        let mut file = std::fs::File::options().write(true).truncate(true).create(true).open(self.path.clone())?;
+        let mut file = std::fs::File::options()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(self.path.clone())?;
         println!("File Opened");
         match &self.data {
             Some(data) => {
@@ -58,7 +64,7 @@ impl AssetsManager {
     }
 
     pub fn load(&mut self, base_path: &str) -> std::io::Result<()> {
-        let mut path = Option::<String>::None;
+        let path;
         if !(base_path.contains('\\') || base_path.contains('/')) {
             path = self.index.get_path(base_path);
         } else {
@@ -67,7 +73,7 @@ impl AssetsManager {
         match path {
             Some(path) => {
                 let path = PathBuf::from(path);
-                
+
                 let mut in_archive: Option<String> = None;
                 let mut path_until_archive = Vec::<String>::new();
                 let mut path_in_archive = Vec::<String>::new();
@@ -90,14 +96,14 @@ impl AssetsManager {
                         let mut file = File::default();
 
                         let mut archive = String::new();
-                        path_until_archive.iter().for_each(|elem|{
+                        path_until_archive.iter().for_each(|elem| {
                             archive.push_str(&format!("{}/", elem));
                         });
                         archive.pop();
                         file.from_archive = true;
 
                         let mut path = String::new();
-                        path_in_archive.iter().for_each(|elem|{
+                        path_in_archive.iter().for_each(|elem| {
                             path.push_str(&format!("{}/", elem));
                         });
                         path.pop();
@@ -117,9 +123,7 @@ impl AssetsManager {
                     }
                 }
             }
-            None => {
-                
-            }
+            None => {}
         }
 
         Ok(())
@@ -144,14 +148,14 @@ impl AssetsManager {
     pub fn remove(&mut self, path: &str) {
         for i in 0..self.files.len() {
             if i < self.files.len() {
-            let file_path = self.files[i].path.to_string_lossy();
-            if path == file_path {
-                if self.files[i].from_archive {
-                    self.cache.remove(path);
+                let file_path = self.files[i].path.to_string_lossy();
+                if path == file_path {
+                    if self.files[i].from_archive {
+                        self.cache.remove(path);
+                    }
+                    self.files.remove(i);
                 }
-                self.files.remove(i);
             }
-        }
         }
     }
 
@@ -180,7 +184,7 @@ impl AssetsManager {
         match in_cache {
             Some(_) => return in_cache,
             None => {
-                let mut index = Option::<usize>::None;
+                let index;
                 if path.contains('\\') || path.contains('/') {
                     index = self.find_file_index_using_full_path(path);
                 } else {
@@ -195,14 +199,14 @@ impl AssetsManager {
     }
 
     pub fn get_ref(&mut self, path: &str) -> Option<&Option<Vec<u8>>> {
-        let is_full_path = path.contains('\\') || path.contains('/'); 
+        let is_full_path = path.contains('\\') || path.contains('/');
         let in_cache = self.cache.get_data_ref(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
                 for file in self.files.iter_mut() {
                     if is_full_path && file.path.to_string_lossy() == path {
-                            return Some(&file.data);
+                        return Some(&file.data);
                     } else if file.path.file_name().unwrap().to_string_lossy() == path {
                         return Some(&file.data);
                     }
@@ -213,17 +217,17 @@ impl AssetsManager {
     }
 
     pub fn get_mut(&mut self, path: &str) -> Option<&mut Option<Vec<u8>>> {
-        let is_full_path = path.contains('\\') || path.contains('/'); 
+        let is_full_path = path.contains('\\') || path.contains('/');
         let in_cache = self.cache.get_data_mut(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
                 for file in self.files.iter_mut() {
-                if is_full_path && file.path.to_string_lossy() == path {
-                    return Some(&mut file.data);
-                } else if file.path.file_name().unwrap().to_string_lossy() == path {
-                    return Some(&mut file.data);
-                }
+                    if is_full_path && file.path.to_string_lossy() == path {
+                        return Some(&mut file.data);
+                    } else if file.path.file_name().unwrap().to_string_lossy() == path {
+                        return Some(&mut file.data);
+                    }
                 }
             }
         }
