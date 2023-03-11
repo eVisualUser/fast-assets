@@ -178,7 +178,7 @@ Now you have to load the dependencies, and to check them you need to call three 
 ```rust
 
 // Take a look in the manager to get if a dependency is missing
-dependencie_manager.update();
+dependencie_manager.update(&mut manager);
 // Return true if all dependencies are present
 dependencie_manager.check_if_valid("text.csv");
 // Get all the missing dependencies
