@@ -30,7 +30,20 @@ impl Index {
         self.redirect_list
             .insert(PathBuf::from(origin), PathBuf::from(target));
     }
+    /*
+        pub fn add_redirect_from_file(&mut self, file: &str) {
+            let content = json::parse(&std::fs::read_to_string(&file).unwrap()).unwrap();
 
+            content.entries().for_each(|entry| {
+                if entry.0 == "redirect" {
+                    for redirect in entry.1.entries() {
+                        let origin = redirect.0;
+                        let target = redirect.1.as_str();
+                    }
+                }
+            });
+        }
+    */
     pub fn remove_redirect(&mut self, origin: &str) {
         self.redirect_list.remove(&PathBuf::from(origin));
     }
