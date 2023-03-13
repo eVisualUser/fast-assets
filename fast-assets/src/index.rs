@@ -1,16 +1,17 @@
 use rayon::prelude::*;
 use regex::Regex;
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone)]
 pub struct Index {
     pub root: PathBuf,
-    /// FileName + Path
     pub files: Vec<PathBuf>,
     pub filter: Regex,
     current_pos: usize,
     csv_separator: char,
+    redirect_list: HashMap<PathBuf, PathBuf>,
 }
 
 impl Index {
@@ -21,7 +22,17 @@ impl Index {
             filter: Regex::new(filter).unwrap(),
             current_pos: 0,
             csv_separator: ';',
+            redirect_list: HashMap::new(),
         }
+    }
+
+    pub fn add_redirect(&mut self, origin: &str, target: &str) {
+        self.redirect_list
+            .insert(PathBuf::from(origin), PathBuf::from(target));
+    }
+
+    pub fn remove_redirect(&mut self, origin: &str) {
+        self.redirect_list.remove(&PathBuf::from(origin));
     }
 
     pub fn set_csv_separator(&mut self, new_separator: char) {
@@ -101,6 +112,14 @@ impl Index {
     }
 
     pub fn get_path(&self, filename: &str) -> Option<String> {
+        let redirect = self.redirect_list.get(&PathBuf::from(filename));
+        match redirect {
+            Some(path) => return Some(path.to_string_lossy().to_string()),
+            _ => {
+                println!("Redirect not found");
+            }
+        }
+
         let result = Arc::new(Mutex::new(Option::<String>::None));
 
         self.files.par_iter().for_each(|path| {
