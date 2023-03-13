@@ -227,11 +227,12 @@ impl AssetsManager {
         match in_cache {
             Some(_) => return in_cache,
             None => {
+                let path = self.index.get_path(path).unwrap();
                 let index;
                 if path.contains('\\') || path.contains('/') {
-                    index = self.find_file_index_using_full_path(path);
+                    index = self.find_file_index_using_full_path(path.as_str());
                 } else {
-                    index = self.find_file_index(path);
+                    index = self.find_file_index(path.as_str());
                 }
                 if index.is_none() {
                     return None;

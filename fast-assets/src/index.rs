@@ -27,23 +27,26 @@ impl Index {
     }
 
     pub fn add_redirect(&mut self, origin: &str, target: &str) {
+        println!("Redirect Added");
         self.redirect_list
             .insert(PathBuf::from(origin), PathBuf::from(target));
     }
-    /*
-        pub fn add_redirect_from_file(&mut self, file: &str) {
-            let content = json::parse(&std::fs::read_to_string(&file).unwrap()).unwrap();
 
-            content.entries().for_each(|entry| {
-                if entry.0 == "redirect" {
-                    for redirect in entry.1.entries() {
-                        let origin = redirect.0;
-                        let target = redirect.1.as_str();
-                    }
+    pub fn add_redirect_from_file(&mut self, file: &str) {
+        let content = json::parse(&std::fs::read_to_string(&file).unwrap()).unwrap();
+
+        content.entries().for_each(|entry| {
+            if entry.0 == "redirect" {
+                for redirect in entry.1.entries() {
+                    let origin =  self.get_path(redirect.0).expect("Missing file in index");
+                    let target = self.get_path(redirect.1.as_str().unwrap()).expect("Missing file in index");
+
+                    self.add_redirect(origin.as_str(), target.as_str());
                 }
-            });
-        }
-    */
+            }
+        });
+    }
+
     pub fn remove_redirect(&mut self, origin: &str) {
         self.redirect_list.remove(&PathBuf::from(origin));
     }
@@ -124,20 +127,28 @@ impl Index {
         }
     }
 
-    pub fn get_path(&self, filename: &str) -> Option<String> {
-        let redirect = self.redirect_list.get(&PathBuf::from(filename));
-        match redirect {
-            Some(path) => return Some(path.to_string_lossy().to_string()),
-            _ => {
-                println!("Redirect not found");
+    pub fn get_redirect(&self, filename: &str) -> Option<String> {
+
+        for redirect in self.redirect_list.iter() {
+            if redirect.0.file_name().unwrap().to_string_lossy() == filename || redirect.0.to_string_lossy() == filename {
+                return Some(redirect.1.to_string_lossy().to_string());
             }
         }
 
+        None
+    }
+
+    pub fn get_path(&self, filename: &str) -> Option<String> {
+        let redirect = self.get_redirect(filename);
+        match redirect {
+            Some(path) => return self.get_path(path.to_string().as_str()),
+            _ => (),
+        }
         let result = Arc::new(Mutex::new(Option::<String>::None));
 
         self.files.par_iter().for_each(|path| {
             let mut result = result.lock().unwrap();
-            if path.file_name().unwrap().to_string_lossy() == filename {
+            if path.file_name().unwrap().to_string_lossy() == filename || path.to_string_lossy() == filename {
                 *result = Some(path.to_string_lossy().to_string());
             }
         });

@@ -17,8 +17,9 @@ All unchecked features are planned.
 - [X] Load compressed assets
 - [X] Dependency Checker
 - [X] Process-Pass
-- [ ] Write files (not compressed only)
+- [X] File Redirect
 - [ ] Streaming assets
+- [ ] Write files (not compressed only)
 
 ## Compression Support
 
