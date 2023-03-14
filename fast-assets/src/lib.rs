@@ -43,33 +43,11 @@ mod test {
         let mut manager = crate::manager::AssetsManager::new(index, dc);
         manager.load("index.csv").unwrap();
         assert_ne!(manager.get("index.csv"), None);
-    }
 
-    #[test]
-    pub fn get_data_ref() {
-        let mut index = crate::index::Index::new("./", "____________");
-        index.set_csv_separator('/');
-        index.search();
-        index.add_from_file("test_resources/index.csv");
-
-        let dc = crate::decompression_manager::DecompressionManager::default();
-
-        let mut manager = crate::manager::AssetsManager::new(index, dc);
         manager.load("index.csv").unwrap();
         assert_ne!(manager.get_ref("index.csv"), None);
         assert_ne!(manager.get_ref("index.csv").unwrap().clone(), None);
-    }
 
-    #[test]
-    pub fn get_data_mut() {
-        let mut index = crate::index::Index::new("./", "____________");
-        index.set_csv_separator('/');
-        index.search();
-        index.add_from_file("test_resources/index.csv");
-
-        let dc = crate::decompression_manager::DecompressionManager::default();
-
-        let mut manager = crate::manager::AssetsManager::new(index, dc);
         manager.load("index.csv").unwrap();
         assert_ne!(manager.get_mut("index.csv"), None);
         assert_ne!(manager.get_mut("index.csv").unwrap().clone(), None);
@@ -101,5 +79,25 @@ mod test {
         index.add_from_file("test_resources/index.csv");
         index.add_redirect_from_file("test_resources/redirect.json");
         assert_eq!(index.get_path("Cargo.toml"), Some(String::from("other.toml")));
+    }
+
+    #[test]
+    pub fn get_compressed() {
+        let mut index = crate::index::Index::new("./", "____________");
+        index.set_csv_separator('/');
+        index.search();
+        index.add_from_file("test_resources/index.csv");
+
+        let dc = crate::decompression_manager::DecompressionManager::default();
+
+        let mut manager = crate::manager::AssetsManager::new(index, dc);
+        manager.load("localization.csv").unwrap();
+        assert_ne!(manager.get("localization.csv"), None);
+
+        assert_ne!(manager.get_ref("localization.csv"), None);
+        assert_ne!(manager.get_ref("localization.csv").unwrap().clone(), None);
+
+        assert_ne!(manager.get_mut("localization.csv"), None);
+        assert_ne!(manager.get_mut("localization.csv").unwrap().clone(), None);
     }
 }

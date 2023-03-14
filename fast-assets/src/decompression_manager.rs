@@ -185,7 +185,6 @@ impl DecompressionManager {
         process_pass_list: &mut Vec<Box<dyn ProcessPass>>,
     ) {
         let path = PathBuf::from(archive);
-        println!("load_archive");
 
         match path
             .extension()

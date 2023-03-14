@@ -4,3 +4,4 @@ test_resources/index.csv
 test_resources/deps.json
 test_resources/redirect.json
 other.toml
+test_resources/localization.zip/localization.csv
