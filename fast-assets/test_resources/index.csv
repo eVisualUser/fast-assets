@@ -1,0 +1,6 @@
+Cargo.toml
+index/index.zip/index.json
+test_resources/index.csv
+test_resources/deps.json
+test_resources/redirect.json
+other.toml
