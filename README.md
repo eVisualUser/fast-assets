@@ -18,7 +18,6 @@ All unchecked features are planned.
 - [X] Dependency Checker
 - [X] Process-Pass
 - [X] File Redirect
-- [ ] Streaming assets
 - [ ] Write files (not compressed only)
 
 ## Compression Support
@@ -151,7 +150,7 @@ manager.remove("text.csv").unwrap().unwrap();
 // Tips: You don't need to unload before excepted if you need to put in cache
 ```
 
-### Dependencie Checker
+### Dependencies Checker
 
 The dependency checker (DependencieManager), the goal is to search the not indexed files in the manager.
 
@@ -210,16 +209,16 @@ A ProcessPass is a trait that adds the following functions:
 
 ```rust
 /// Called when loading a file, and return true if continue the existing process
-fn on_load(&mut self, _: &mut AssetsManager, _: &mut Option<String>) -> bool;
+fn on_load(&mut self, _: &mut AssetsManager, path: &mut Option<String>) -> bool;
 
 /// Called when unloading a file, and return true if continue the existing process
-fn on_unload(&mut self, _: &mut AssetsManager, _: &mut &str, _: &mut bool);
+fn on_unload(&mut self, _: &mut AssetsManager, path: &mut &str, use_cache: &mut bool);
 
 /// Called when remove a file reference, and return true if continue the existing process
-fn on_remove(&mut self, _: &mut AssetsManager, _: &mut &str) -> bool;
+fn on_remove(&mut self, _: &mut AssetsManager, path: &mut &str) -> bool;
 
 /// Called when loading file/files from archive
-fn on_archive(&mut self, _: &mut DecompressionManager, _: &str);
+fn on_archive(&mut self, _: &mut DecompressionManager, ext: &str, path: &str);
 ```
 
 #### Add it to the AssetsManager
@@ -228,4 +227,31 @@ fn on_archive(&mut self, _: &mut DecompressionManager, _: &str);
 let my_process_pass = MyProcessPass::default();
 
 manager.add_process_pass(Box::new(my_process_pass));
+```
+
+### Redirect System
+
+Sometimes it's useful to specify a path, but in background the assets manager use the good file path.
+So it's supported.
+
+#### Add redirect
+
+##### From simple command
+
+```rust
+index.add_redirect("base_path", "new_path");
+```
+
+##### From file
+
+```json
+{
+  "redirect": {
+    "base_path": "new_path"
+  }
+}
+```
+
+```rust
+index.add_redirect_from_file("redirect.json");
 ```
