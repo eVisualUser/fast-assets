@@ -231,8 +231,8 @@ manager.add_process_pass(Box::new(my_process_pass));
 
 ### Redirect System
 
-Sometimes it's useful to specify a path, but in background the assets manager use the good file path.
-So it's supported.
+Sometimes it's useful to specify a path and in background the assets manager use the good file path.
+So it's implemented.
 
 #### Add redirect
 

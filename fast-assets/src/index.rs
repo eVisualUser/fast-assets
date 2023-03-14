@@ -27,7 +27,6 @@ impl Index {
     }
 
     pub fn add_redirect(&mut self, origin: &str, target: &str) {
-        println!("Redirect Added");
         self.redirect_list
             .insert(PathBuf::from(origin), PathBuf::from(target));
     }
