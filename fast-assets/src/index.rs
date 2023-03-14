@@ -144,6 +144,7 @@ impl Index {
             Some(path) => return self.get_path(path.to_string().as_str()),
             _ => (),
         }
+
         let result = Arc::new(Mutex::new(Option::<String>::None));
 
         self.files.par_iter().for_each(|path| {

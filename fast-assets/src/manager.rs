@@ -243,15 +243,14 @@ impl AssetsManager {
     }
 
     pub fn get_ref(&mut self, path: &str) -> Option<&Option<Vec<u8>>> {
-        let is_full_path = path.contains('\\') || path.contains('/');
+        let path_buf = self.index.get_path(path).unwrap();
+        let is_full_path = path_buf.contains('\\') || path_buf.contains('/');
         let in_cache = self.cache.get_data_ref(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
-                for file in self.files.iter_mut() {
-                    if is_full_path && file.path.to_string_lossy() == path {
-                        return Some(&file.data);
-                    } else if file.path.file_name().unwrap().to_string_lossy() == path {
+                for file in self.files.iter() {
+                    if is_full_path && file.path.to_string_lossy() == path_buf {
                         return Some(&file.data);
                     }
                 }
@@ -261,15 +260,14 @@ impl AssetsManager {
     }
 
     pub fn get_mut(&mut self, path: &str) -> Option<&mut Option<Vec<u8>>> {
-        let is_full_path = path.contains('\\') || path.contains('/');
+        let path_buf = self.index.get_path(path).unwrap();
+        let is_full_path = path_buf.contains('\\') || path_buf.contains('/');
         let in_cache = self.cache.get_data_mut(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
                 for file in self.files.iter_mut() {
-                    if is_full_path && file.path.to_string_lossy() == path {
-                        return Some(&mut file.data);
-                    } else if file.path.file_name().unwrap().to_string_lossy() == path {
+                    if is_full_path && file.path.to_string_lossy() == path_buf {
                         return Some(&mut file.data);
                     }
                 }
