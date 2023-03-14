@@ -6,6 +6,8 @@ pub mod process_pass;
 
 #[cfg(test)]
 mod test {
+    use std::time::Duration;
+
     #[test]
     pub fn get_cargo_toml_path_index() {
         let mut index = crate::index::Index::new("./", "Cargo.toml");
@@ -99,5 +101,19 @@ mod test {
 
         assert_ne!(manager.get_mut("localization.csv"), None);
         assert_ne!(manager.get_mut("localization.csv").unwrap().clone(), None);
+    }
+
+    #[test]
+    pub fn saving() -> std::io::Result<()> {
+        let mut index = crate::index::Index::new("./", "____________");
+        index.set_csv_separator('/');
+        index.search();
+        index.add_from_file("test_resources/index.csv");
+
+        let dc = crate::decompression_manager::DecompressionManager::default();
+
+        let mut manager = crate::manager::AssetsManager::new(index, dc);
+        manager.load("index.csv").unwrap();
+        manager.save("index.csv")
     }
 }

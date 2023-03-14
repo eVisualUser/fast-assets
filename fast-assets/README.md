@@ -1,13 +1,7 @@
-# fast-assets
+**# fast-assets
 
 Easy to use assets manager, that can manage any kind of file by manipulating files as Vec<u8>,
-its made to fit in any software/game/framework.
-
-## ⚠️ Warning ⚠️
-
-This library is still under development.
-If you found a missing feature [open an issue on GitHub](https://github.com/eVisualUser/fast-assets/issues).
-All unchecked features are planned.
+it's made to fit in any software/game/framework.
 
 ## Features
 
@@ -18,7 +12,7 @@ All unchecked features are planned.
 - [X] Dependency Checker
 - [X] Process-Pass
 - [X] File Redirect
-- [ ] Write files (not compressed only)
+- [X] Write files (not compressed only)
 
 ## Compression Support
 
@@ -161,13 +155,13 @@ The organization of the JSON file is not recursive, so you cannot define the dep
 
 ```json
 {
-    "text.csv": [
-        "index.json",
-        "other.csv"
-    ],
-    "index.json": [
-        "text.csv"
-    ]
+  "text.csv": [
+    "index.json",
+    "other.csv"
+  ],
+  "index.json": [
+    "text.csv"
+  ]
 }
 ```
 
@@ -231,8 +225,8 @@ manager.add_process_pass(Box::new(my_process_pass));
 
 ### Redirect System
 
-Sometimes it's useful to specify a path, but in background the assets manager use the good file path.
-So it's supported.
+Sometimes it's useful to specify a path and in background the assets manager use the good file path.
+So it's implemented.
 
 #### Add redirect
 

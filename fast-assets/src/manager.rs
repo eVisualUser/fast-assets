@@ -3,6 +3,8 @@ use crate::index::Index;
 use crate::process_pass::ProcessPass;
 use std::io::{Read, Write};
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use rayon::prelude::*;
 
 #[derive(Default, Debug)]
 pub struct File {
@@ -52,7 +54,7 @@ pub struct AssetsManager {
     index: Index,
     cache: DecompressionManager,
     files: Vec<File>,
-    process_pass_list: Vec<Box<dyn ProcessPass>>,
+    pub process_pass_list: Vec<Box<dyn ProcessPass>>,
     compression_formats: Vec<String>,
 }
 
@@ -64,6 +66,14 @@ impl AssetsManager {
             files: Vec::new(),
             process_pass_list: Vec::new(),
             compression_formats: vec![String::from("zip")],
+        }
+    }
+
+    pub fn remove_process_pass(&mut self, name: &str) {
+        for i in 0..self.process_pass_list.len() {
+            if self.process_pass_list[i].get_name() == name {
+                self.process_pass_list.remove(i);
+            }
         }
     }
 
@@ -205,10 +215,9 @@ impl AssetsManager {
     pub fn find_file_index(&self, filename: &str) -> Option<usize> {
         for i in 0..self.files.len() {
             if self.files[i].path.file_name().unwrap().to_string_lossy() == filename {
-                return Some(i);
+                   return Some(i);
             }
         }
-
         None
     }
 
@@ -218,14 +227,13 @@ impl AssetsManager {
                 return Some(i);
             }
         }
-
         None
     }
 
     pub fn get(&mut self, path: &str) -> Option<Vec<u8>> {
         let in_cache = self.cache.get_data(path);
-        match in_cache {
-            Some(_) => return in_cache,
+        return match in_cache {
+            Some(_) => in_cache,
             None => {
                 let path = self.index.get_path(path).unwrap();
                 let index;
@@ -237,7 +245,7 @@ impl AssetsManager {
                 if index.is_none() {
                     return None;
                 }
-                return self.files[index.unwrap()].data.clone();
+                self.files[index.unwrap()].data.clone()
             }
         }
     }
