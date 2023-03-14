@@ -123,8 +123,6 @@ If the file was put in the cache and will automatically reload it.
 
 ### Saving Data
 
-⚠️ This feature encounters io authorizations issues ⚠️
-
 Only saves data of files that are not from compressed files.
 Return a simple std::io::Result<()> as result.
 If the file does not exist anymore it will create a new file.
