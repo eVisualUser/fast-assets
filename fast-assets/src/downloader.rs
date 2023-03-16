@@ -13,18 +13,40 @@ impl Downloader {
     pub fn download(&self, url: String, output: String) -> JoinHandle<()> {
         std::thread::spawn(move ||{
             let mut easy = Easy::new();
-            easy.url(&url).unwrap();
+            match easy.url(&url) {
+                Err(err) => {
+                    eprintln!("ERROR Downloader(Curl): {:?}", err);
+                }
+                _ => (),
+            }
 
-            let mut file = std::fs::File::options().write(true).truncate(true).create(true).open(&output).unwrap();
+            let file = std::fs::File::options().write(true).truncate(true).create(true).open(&output);
+            let mut file = match file {
+                Err(err) => {
+                    panic!("ERROR Downloader(FS): {:?}", err);
+                }
+                Ok(ok) => ok,
+            };
 
             let mut transfer = easy.transfer();
-            transfer.write_function(move |data| {
+            match transfer.write_function(move |data| {
                 file.write_all(data).unwrap();
                 file.flush().unwrap();
                 file.sync_all().unwrap();
                 Ok(data.len())
-            }).unwrap();
-            transfer.perform().unwrap();
+            }) {
+                Err(err) => {
+                    eprintln!("ERROR Downloader(Curl): {:?}", err);
+                }
+                _ => (),
+            }
+
+            match transfer.perform() {
+                Err(err) => {
+                    eprintln!("ERROR Downloader(Curl): {:?}", err);
+                }
+                _ => (),
+            }
         })
     }
 }
