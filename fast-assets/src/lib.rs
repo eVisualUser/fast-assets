@@ -147,6 +147,10 @@ mod test {
         let out_b = String::from("rust_lang.html");
         let out_c = String::from("HelloWorld.zip");
 
+        assert!(downloader.can_download(&link_a));
+        assert!(downloader.can_download(&link_b));
+        assert!(downloader.can_download(&link_c));
+
         let th_a = downloader.download(link_a, out_a.clone());
         let th_b = downloader.download(link_b, out_b.clone());
         let th_c = downloader.download(link_c, out_c.clone());

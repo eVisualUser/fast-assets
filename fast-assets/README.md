@@ -13,7 +13,7 @@ it's made to fit in any software/game/framework.
 - [X] Process-Pass
 - [X] File Redirect
 - [X] Write files (not compressed only)
-- [ ] Downloader (Download files from web)
+- [X] Downloader (Download files from web)
 
 ## Compression Support
 

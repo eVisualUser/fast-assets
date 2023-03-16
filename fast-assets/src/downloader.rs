@@ -49,4 +49,16 @@ impl Downloader {
             }
         })
     }
+
+    pub fn can_download(&self, target: &str) -> bool {
+        let mut handle = Easy::new();
+        match handle.url(target) {
+            Ok(_) => (),
+            _ => return false,
+        }
+        return match handle.perform() {
+            Ok(_) => true,
+            _ => false,
+        }
+    }
 }
