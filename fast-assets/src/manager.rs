@@ -49,8 +49,8 @@ impl File {
 
 #[derive(Debug)]
 pub struct AssetsManager {
-    index: Index,
-    cache: DecompressionManager,
+    pub index: Index,
+    pub cache: DecompressionManager,
     files: Vec<File>,
     pub process_pass_list: Vec<Box<dyn ProcessPass>>,
     compression_formats: Vec<String>,
@@ -65,6 +65,34 @@ impl AssetsManager {
             process_pass_list: Vec::new(),
             compression_formats: vec![String::from("zip")],
         }
+    }
+
+    pub fn move_file(&mut self, origin: &str, target: &str) -> std::io::Result<()> {
+        let origin = self.index.get_path(origin).unwrap();
+        std::fs::copy(origin.clone(), target.clone())?;
+        std::fs::remove_file(origin.clone())?;
+
+        self.index.remove_indexed_file(&origin);
+        self.index.add_file(PathBuf::from(target));
+
+        Ok(())
+    }
+
+    pub fn remove_file(&mut self, origin: &str) -> std::io::Result<()> {
+        let origin = self.index.get_path(origin).unwrap();
+        std::fs::remove_file(origin.clone())?;
+        self.index.remove_indexed_file(&origin);
+
+        Ok(())
+    }
+
+    pub fn copy_file(&mut self, origin: &str, target: &str) -> std::io::Result<()> {
+        let origin = self.index.get_path(origin).unwrap();
+        std::fs::copy(origin.clone(), target.clone())?;
+
+        self.index.add_file(PathBuf::from(target));
+
+        Ok(())
     }
 
     pub fn create_file(&mut self, path: &str) -> std::io::Result<()> {
