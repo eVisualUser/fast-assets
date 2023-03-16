@@ -1,6 +1,7 @@
 use rayon::prelude::*;
 use regex::Regex;
 use std::collections::HashMap;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
@@ -24,6 +25,28 @@ impl Index {
             csv_separator: ';',
             redirect_list: HashMap::new(),
         }
+    }
+
+    pub fn save_as_file(&self, filename: &str) -> std::io::Result<()> {
+
+        let mut output = std::fs::File::options().write(true).truncate(true).create(true).open(filename)?;
+
+        for file in self.files.iter() {
+            let mut line = String::new();
+            for element in file.iter() {
+                if element != "." {
+                    let element = element.to_string_lossy();
+                    line.push_str(&element);
+                    line.push(self.csv_separator);
+                }
+            }
+            line.pop();
+            line.push('\n');
+            output.write(line.as_bytes())?;
+        }
+
+        output.flush().unwrap();
+        Ok(())
     }
 
     pub fn add_redirect(&mut self, origin: &str, target: &str) {
