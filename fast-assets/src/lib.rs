@@ -3,9 +3,11 @@ pub mod dependencie_manager;
 pub mod index;
 pub mod manager;
 pub mod process_pass;
+pub mod downloader;
 
 #[cfg(test)]
 mod test {
+    use std::path::PathBuf;
     use std::time::Duration;
 
     #[test]
@@ -131,5 +133,29 @@ mod test {
         manager.load("myFile.txt")?;
         assert_ne!(manager.get("myFile.txt"), None);
         Ok(())
+    }
+
+    #[test]
+    pub fn downloader() {
+        let downloader = crate::downloader::Downloader::default();
+
+        let link_a = String::from("https://crates.io/assets/cargo.png");
+        let link_b = String::from("https://www.rust-lang.org/");
+        let link_c = String::from("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip");
+
+        let out_a = String::from("crates.png");
+        let out_b = String::from("rust_lang.html");
+        let out_c = String::from("HelloWorld.zip");
+
+        let th_a = downloader.download(link_a, out_a.clone());
+        let th_b = downloader.download(link_b, out_b.clone());
+        let th_c = downloader.download(link_c, out_c.clone());
+        th_a.join().unwrap();
+        th_b.join().unwrap();
+        th_c.join().unwrap();
+
+        assert!(PathBuf::from(out_a).exists());
+        assert!(PathBuf::from(out_b).exists());
+        assert!(PathBuf::from(out_c).exists());
     }
 }
