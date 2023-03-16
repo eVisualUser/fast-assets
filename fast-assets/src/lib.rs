@@ -8,7 +8,6 @@ pub mod downloader;
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;
-    use std::time::Duration;
 
     #[test]
     pub fn get_cargo_toml_path_index() {
