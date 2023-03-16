@@ -116,4 +116,20 @@ mod test {
         manager.load("index.csv").unwrap();
         manager.save("index.csv")
     }
+
+    #[test]
+    pub fn create() -> std::io::Result<()> {
+        let mut index = crate::index::Index::new("./", "____________");
+        index.set_csv_separator('/');
+        index.search();
+        index.add_from_file("test_resources/index.csv");
+
+        let dc = crate::decompression_manager::DecompressionManager::default();
+
+        let mut manager = crate::manager::AssetsManager::new(index, dc);
+        manager.create_file("myFile.txt")?;
+        manager.load("myFile.txt")?;
+        assert_ne!(manager.get("myFile.txt"), None);
+        Ok(())
+    }
 }

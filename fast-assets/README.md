@@ -1,4 +1,4 @@
-**# fast-assets
+# fast-assets
 
 Easy to use assets manager, that can manage any kind of file by manipulating files as Vec<u8>,
 it's made to fit in any software/game/framework.

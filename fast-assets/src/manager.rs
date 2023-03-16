@@ -69,6 +69,13 @@ impl AssetsManager {
         }
     }
 
+    pub fn create_file(&mut self, path: &str) -> std::io::Result<()> {
+        std::fs::File::options().create(true).write(true).open(path)?;
+        self.index.add_file(PathBuf::from(path));
+
+        Ok(())
+    }
+
     pub fn remove_process_pass(&mut self, name: &str) {
         for i in 0..self.process_pass_list.len() {
             if self.process_pass_list[i].get_name() == name {
