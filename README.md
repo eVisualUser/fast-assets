@@ -1,4 +1,4 @@
-**# fast-assets
+****# fast-assets
 
 Easy to use assets manager, that can manage any kind of file by manipulating files as Vec<u8>,
 it's made to fit in any software/game/framework.
@@ -28,8 +28,8 @@ Used to load files compressed
 
 ```rust
 let mut index = fast_assets::index::Index::new("./", "\\w+\\.rs");
-index.add_from_file("index/index.csv");
 index.set_csv_separator('/');
+index.add_from_file("index/index.csv");
 ```
 
 ```csv
@@ -53,6 +53,9 @@ index.add_from_file("index/index.csv");
 let dc = fast_assets::decompression_manager::DecompressionManager::default();
 
 let mut manager = fast_assets::manager::AssetsManager::new(index, dc);
+
+// Create a file and add it to the index
+manage.create_file("myFile.text");
 ```
 
 ### Loading/Unloading a file in memory
@@ -153,13 +156,13 @@ The organization of the JSON file is not recursive, so you cannot define the dep
 
 ```json
 {
-    "text.csv": [
-        "index.json",
-        "other.csv"
-    ],
-    "index.json": [
-        "text.csv"
-    ]
+  "text.csv": [
+    "index.json",
+    "other.csv"
+  ],
+  "index.json": [
+    "text.csv"
+  ]
 }
 ```
 
