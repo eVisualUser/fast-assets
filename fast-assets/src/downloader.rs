@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-use std::io::{BufWriter, Write};
-use std::ops::{Deref, DerefMut};
+use std::io::Write;
 use std::thread::JoinHandle;
 use curl::easy::Easy;
 

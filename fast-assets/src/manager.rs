@@ -3,8 +3,6 @@ use crate::index::Index;
 use crate::process_pass::ProcessPass;
 use std::io::{Read, Write};
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use rayon::prelude::*;
 
 #[derive(Default, Debug)]
 pub struct File {
