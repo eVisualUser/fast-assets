@@ -258,6 +258,11 @@ index.add_redirect_from_file("redirect.json");
 // Create an instance of the downloader
 let downloader = crate::downloader::Downloader::default();
 
+// If you want prevent a download failure
+downloader.can_download("https://crates.io/assets/cargo.png");
+downloader.can_download("https://www.rust-lang.org/");
+downloader.can_download("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip");
+
 // Each download start a thread, so you can do it using Multi-Threading
 let th_a = downloader.download(String::from("https://crates.io/assets/cargo.png"), String::from("crates.png"));
 let th_b = downloader.download(String::from("https://www.rust-lang.org/"), String::from("rust_lang.html"));
