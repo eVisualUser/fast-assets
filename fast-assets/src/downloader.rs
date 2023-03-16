@@ -5,6 +5,7 @@ use std::thread::JoinHandle;
 use curl::easy::Easy;
 
 #[derive(Default)]
+/// It have all features to support web download using Curl
 pub struct Downloader {
 
 }
