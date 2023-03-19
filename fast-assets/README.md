@@ -306,5 +306,5 @@ manager.move_file("myFile.txt", "folder/myFile.txt");
 
 ```rust
 // Remove a file from the index and from the directory
-manager.copy_file("myFile.txt");
+manager.remove_file("myFile.txt");
 ```
