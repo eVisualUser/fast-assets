@@ -73,7 +73,10 @@ impl AssetsManager {
         std::fs::remove_file(origin.clone())?;
 
         self.index.remove_indexed_file(&origin);
-        self.index.add_file(PathBuf::from(target));
+        let target_path = PathBuf::from(target);
+        if !target_path.exists() {
+            self.index.add_file(target_path);
+        }
 
         Ok(())
     }
@@ -302,19 +305,27 @@ impl AssetsManager {
 
     pub fn get_mut(&mut self, path: &str) -> Option<&mut Option<Vec<u8>>> {
         let path_buf = self.index.get_path(path).unwrap();
-        let is_full_path = path_buf.contains('\\') || path_buf.contains('/');
         let in_cache = self.cache.get_data_mut(path);
         match in_cache {
             Some(_) => return in_cache,
             None => {
                 for file in self.files.iter_mut() {
-                    if is_full_path && file.path.to_string_lossy() == path_buf {
+                    if file.path.to_string_lossy() == path_buf {
                         return Some(&mut file.data);
                     }
                 }
             }
         }
         None
+    }
+
+    pub fn set_data(&mut self, path: &str, new_data: Vec<u8>) {
+        match self.get_mut(path) {
+            Some(data) => {
+                *data = Some(new_data);
+            }
+            None => (),
+        }
     }
 
     pub fn have_file(&self, filename: &str) -> bool {

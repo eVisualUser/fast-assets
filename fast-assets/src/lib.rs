@@ -161,4 +161,54 @@ mod test {
         assert!(PathBuf::from(out_b).exists());
         assert!(PathBuf::from(out_c).exists());
     }
+
+    #[test]
+    pub fn file_control() {
+        let mut index = crate::index::Index::new("./", "____________");
+        index.set_csv_separator('/');
+        index.search();
+        index.add_from_file("test_resources/index.csv");
+
+        let dc = crate::decompression_manager::DecompressionManager::default();
+
+        let mut manager = crate::manager::AssetsManager::new(index, dc);
+        manager.create_file("demoFile.txt").unwrap();
+        assert_ne!(manager.index.get_path("demoFile.txt"), None);
+
+        manager.copy_file("demoFile.txt", "index/demoFile.txt").unwrap();
+        assert_eq!(manager.index.get_path("demoFile.txt"), Some(String::from("index/demoFile.txt")));
+
+        let path = PathBuf::from("index/demoFile.txt");
+        assert!(path.exists());
+
+        manager.move_file("index/demoFile.txt", "demoFile.txt").unwrap();
+        assert_eq!(manager.index.get_path("demoFile.txt"), Some(String::from("demoFile.txt")));
+
+        assert!(!path.exists());
+
+        manager.remove_file("demoFile.txt").unwrap();
+        assert_eq!(manager.index.get_path("demoFile.txt"), None);
+
+        let path = PathBuf::from("demoFile.txt");
+
+        assert!(!path.exists());
+    }
+
+    #[test]
+    pub fn set_data() {
+        let mut index = crate::index::Index::new("./", "____________");
+        index.set_csv_separator('/');
+        index.search();
+        index.add_from_file("test_resources/index.csv");
+
+        let dc = crate::decompression_manager::DecompressionManager::default();
+
+        let mut manager = crate::manager::AssetsManager::new(index, dc);
+        manager.create_file("demoFile.txt").unwrap();
+        assert_ne!(manager.index.get_path("demoFile.txt"), None);
+
+        manager.load("demoFile.txt").unwrap();
+        manager.set_data("demoFile.txt", b"Hello, World!".to_vec());
+        assert_eq!(String::from_utf8(manager.get_mut("demoFile.txt").unwrap().clone().unwrap()).unwrap(), String::from("Hello, World!"));
+    }
 }

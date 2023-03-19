@@ -1,6 +1,6 @@
 [package]
 name = "fast-assets"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 readme = "README.md"
 description = "Easy to use Assets Manager"

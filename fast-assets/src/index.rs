@@ -194,19 +194,21 @@ impl Index {
 
     /// Remove the index, and return if it was found
     pub fn remove_indexed_file(&mut self, filename: &str) -> bool {
-        let using_full_path = filename.contains("\\") || filename.contains("/");
-        for i in 0..self.files.len() {
-            if !using_full_path && self.files[i].file_name().unwrap().to_string_lossy() == filename
-            {
-                self.files.remove(i);
-                return true;
-            } else if using_full_path && self.files[i].to_string_lossy() == filename {
-                self.files.remove(i);
-                return true;
+        let path = self.get_path(filename);
+        return match path {
+            Some(path) => {
+                for i in 0..self.files.len() {
+                    if self.files[i].to_string_lossy() == path {
+                        self.files.remove(i);
+                        return true;
+                    }
+                }
+                false
+            }
+            None => {
+                false
             }
         }
-
-        false
     }
 
     pub fn regex_search(&self, filter: &str) -> Vec<PathBuf> {

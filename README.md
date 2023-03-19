@@ -1,4 +1,4 @@
-****# fast-assets
+# fast-assets
 
 Easy to use assets manager, that can manage any kind of file by manipulating files as Vec<u8>,
 it's made to fit in any software/game/framework.
@@ -13,7 +13,8 @@ it's made to fit in any software/game/framework.
 - [X] Process-Pass
 - [X] File Redirect
 - [X] Write files (not compressed only)
-- [ ] Downloader (Download files from web)
+- [X] Downloader (Download files from web)
+- [X] Easy file move/copy/remove
 
 ## Compression Support
 
@@ -121,6 +122,9 @@ manager.get_mut("text.csv").unwrap().unwrap();
 manager.get("en/text.csv").unwrap();
 manager.get_ref("fr/text.csv").unwrap();
 manager.get_mut("it/text.csv").unwrap();
+
+// If you to set the data you can call:
+manager.set_data("text.csv", b"Hello, World!".to_vec());
 ```
 
 If the file was put in the cache and will automatically reload it.
@@ -271,4 +275,36 @@ let th_c = downloader.download(String::from("https://github.com/eVisualUser/bell
 th_a.join().unwrap();
 th_b.join().unwrap();
 th_c.join().unwrap();
+```
+
+### Easy File move/copy/remove
+
+There is few useful methods to control your file, and update the index as well.
+
+#### Create a File
+
+```rust
+// Create the file and add it to the index
+manager.create_file("myFile.txt");
+```
+
+#### Copy a file
+
+```rust
+// Copy the file to another location
+manager.copy_file("myFile.txt", "folder/myFile.txt");
+```
+
+#### Move a file
+
+```rust
+// Copy the file and remove the original
+manager.move_file("myFile.txt", "folder/myFile.txt");
+```
+
+#### Remove a file
+
+```rust
+// Remove a file from the index and from the directory
+manager.copy_file("myFile.txt");
 ```
