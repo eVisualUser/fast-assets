@@ -150,12 +150,9 @@ mod test {
         assert!(downloader.can_download(&link_b));
         assert!(downloader.can_download(&link_c));
 
-        let th_a = downloader.download(link_a, out_a.clone());
-        let th_b = downloader.download(link_b, out_b.clone());
-        let th_c = downloader.download(link_c, out_c.clone());
-        th_a.join().unwrap();
-        th_b.join().unwrap();
-        th_c.join().unwrap();
+        downloader.download_sync(link_a, out_a.clone());
+        downloader.download_sync(link_b, out_b.clone());
+        downloader.download_sync(link_c, out_c.clone());
 
         assert!(PathBuf::from(out_a).exists());
         assert!(PathBuf::from(out_b).exists());

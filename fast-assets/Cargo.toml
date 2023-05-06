@@ -11,6 +11,7 @@ license = "MIT"
 [dependencies]
 regex = "1.7.1"
 rayon = "1.7.0"
+pollster = "0.3.0"
 
 # Files Formats
 json = "0.12.4"

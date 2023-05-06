@@ -267,14 +267,11 @@ downloader.can_download("https://crates.io/assets/cargo.png");
 downloader.can_download("https://www.rust-lang.org/");
 downloader.can_download("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip");
 
-// Each download start a thread, so you can do it using Multi-Threading
-let th_a = downloader.download(String::from("https://crates.io/assets/cargo.png"), String::from("crates.png"));
-let th_b = downloader.download(String::from("https://www.rust-lang.org/"), String::from("rust_lang.html"));
-let th_c = downloader.download(String::from("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip"), String::from("HelloWorld.zip"));
-// Join each thread before continue
-th_a.join().unwrap();
-th_b.join().unwrap();
-th_c.join().unwrap();
+// Here using _sync method version to not have to handle the async.
+// All errors produced will be output in the console.
+downloader.download_sync(String::from("https://crates.io/assets/cargo.png"), String::from("crates.png"));
+downloader.download_sync(String::from("https://www.rust-lang.org/"), String::from("rust_lang.html"));
+downloader.download_sync(String::from("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip"), String::from("HelloWorld.zip"));
 ```
 
 ### Easy File move/copy/remove
