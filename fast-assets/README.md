@@ -161,13 +161,15 @@ The organization of the JSON file is not recursive, so you cannot define the dep
 
 ```json
 {
-  "text.csv": [
-    "index.json",
-    "other.csv"
-  ],
-  "index.json": [
-    "text.csv"
-  ]
+  "dependencies": {
+    "text.csv": [
+      "index.json",
+      "other.csv"
+    ],
+    "index.json": [
+      "text.csv"
+    ]
+  }
 }
 ```
 

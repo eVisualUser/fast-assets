@@ -1,5 +1,7 @@
 {
-  "index.csv": [
-    "other.csv"
-  ]
+  "dependencies": {
+    "index.csv": [
+      "other.csv"
+    ]
+  }
 }

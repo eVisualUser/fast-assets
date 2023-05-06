@@ -33,15 +33,20 @@ impl DependencieManager {
         let content = json::parse(&content).unwrap();
 
         for (name, value) in content.entries() {
-            let mut dep = Dependencie::default();
-            dep.source = String::from(name);
-            if value.is_array() {
-                for file in value.members() {
-                    let filename = file.as_str().unwrap().to_string();
-                    dep.deps.push(filename.clone());
+            if name == "dependencies" {
+                for (name, value) in value.entries() {
+                    let mut dep = Dependencie::default();
+                    dep.source = String::from(name);
+                    if value.is_array() {
+                        for file in value.members() {
+                            let filename = file.as_str().unwrap().to_string();
+                            dep.deps.push(filename.clone());
+                        }
+                    }
+                    self.deps.push(dep);
                 }
+                break;
             }
-            self.deps.push(dep);
         }
     }
 
