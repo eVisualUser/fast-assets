@@ -3,7 +3,7 @@ use std::{
     path::PathBuf,
 };
 
-use crate::process_pass::ProcessPass;
+use crate::extension::Extension;
 
 #[derive(Debug, Default)]
 pub struct CachedFile {
@@ -182,7 +182,7 @@ impl DecompressionManager {
         &mut self,
         archive: &str,
         selection: Option<Vec<&str>>,
-        process_pass_list: &mut Vec<Box<dyn ProcessPass>>,
+        process_pass_list: &mut Vec<Box<dyn Extension>>,
     ) {
         let path = PathBuf::from(archive);
 

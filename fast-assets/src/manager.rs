@@ -1,6 +1,6 @@
 use crate::decompression_manager::DecompressionManager;
 use crate::index::Index;
-use crate::process_pass::ProcessPass;
+use crate::extension::Extension;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
@@ -52,7 +52,7 @@ pub struct AssetsManager {
     pub index: Index,
     pub cache: DecompressionManager,
     files: Vec<File>,
-    pub process_pass_list: Vec<Box<dyn ProcessPass>>,
+    pub extension_list: Vec<Box<dyn Extension>>,
     compression_formats: Vec<String>,
 }
 
@@ -62,7 +62,7 @@ impl AssetsManager {
             index,
             cache,
             files: Vec::new(),
-            process_pass_list: Vec::new(),
+            extension_list: Vec::new(),
             compression_formats: vec![String::from("zip")],
         }
     }
@@ -106,9 +106,9 @@ impl AssetsManager {
     }
 
     pub fn remove_process_pass(&mut self, name: &str) {
-        for i in 0..self.process_pass_list.len() {
-            if self.process_pass_list[i].get_name() == name {
-                self.process_pass_list.remove(i);
+        for i in 0..self.extension_list.len() {
+            if self.extension_list[i].get_name() == name {
+                self.extension_list.remove(i);
             }
         }
     }
@@ -117,8 +117,8 @@ impl AssetsManager {
         self.compression_formats.push(String::from(format));
     }
 
-    pub fn add_process_pass(&mut self, process_pass: Box<dyn ProcessPass>) {
-        self.process_pass_list.push(process_pass);
+    pub fn add_extension(&mut self, extension: Box<dyn Extension>) {
+        self.extension_list.push(extension);
     }
 
     pub fn load(&mut self, base_path: &str) -> std::io::Result<()> {
@@ -129,12 +129,12 @@ impl AssetsManager {
             path = Some(String::from(base_path));
         }
 
-        for i in 0..self.process_pass_list.len() {
-            let mut process_pass = self.process_pass_list.swap_remove(i);
+        for i in 0..self.extension_list.len() {
+            let mut process_pass = self.extension_list.swap_remove(i);
             if !process_pass.on_load(self, &mut path) {
                 return Ok(());
             }
-            self.process_pass_list.insert(i, process_pass);
+            self.extension_list.insert(i, process_pass);
         }
 
         match path {
@@ -181,7 +181,7 @@ impl AssetsManager {
                         self.cache.load_archive(
                             &archive,
                             Some(vec![&path]),
-                            &mut self.process_pass_list,
+                            &mut self.extension_list,
                         );
 
                         file.from_archive = true;
@@ -203,12 +203,12 @@ impl AssetsManager {
     }
 
     pub fn unload(&mut self, mut path: &str, mut cache_decompressed: bool) {
-        for i in 0..self.process_pass_list.len() {
-            let mut process_pass = self.process_pass_list.swap_remove(i);
+        for i in 0..self.extension_list.len() {
+            let mut process_pass = self.extension_list.swap_remove(i);
             if !process_pass.on_unload(self, &mut path, &mut cache_decompressed) {
                 return;
             }
-            self.process_pass_list.insert(i, process_pass);
+            self.extension_list.insert(i, process_pass);
         }
 
         for file in self.files.iter_mut() {
@@ -227,12 +227,12 @@ impl AssetsManager {
     }
 
     pub fn remove(&mut self, mut path: &str) {
-        for i in 0..self.process_pass_list.len() {
-            let mut process_pass = self.process_pass_list.swap_remove(i);
+        for i in 0..self.extension_list.len() {
+            let mut process_pass = self.extension_list.swap_remove(i);
             if !process_pass.on_remove(self, &mut path) {
                 return;
             }
-            self.process_pass_list.insert(i, process_pass);
+            self.extension_list.insert(i, process_pass);
         }
 
         for i in 0..self.files.len() {

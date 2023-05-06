@@ -10,7 +10,7 @@ it's made to fit in any software/game/framework.
 - [X] Load assets
 - [X] Load compressed assets
 - [X] Dependency Checker
-- [X] Process-Pass
+- [X] Extension
 - [X] File Redirect
 - [X] Write files (not compressed only)
 - [X] Downloader (Download files from web)
@@ -200,14 +200,14 @@ dependencie_manager.check_if_valid("text.csv");
 dependencie_manager.get_missing_dependencies("text.csv");
 ```
 
-### ProcessPass
+### Extension
 
 This is an easy way to add custom features.
 It targets to let you add support for new compression formats...
 
-#### Create a ProcessPass
+#### Create an Extension
 
-A ProcessPass is a trait that adds the following functions:
+An Extension is a trait that adds the following functions:
 
 ```rust
 /// Called when loading a file, and return true if continue the existing process
@@ -226,9 +226,9 @@ fn on_archive(&mut self, _: &mut DecompressionManager, ext: &str, path: &str);
 #### Add it to the AssetsManager
 
 ```rust
-let my_process_pass = MyProcessPass::default();
+let my_extension = MyExtension::default();
 
-manager.add_process_pass(Box::new(my_process_pass));
+manager.add_extension(Box::new(my_extension));
 ```
 
 ### Redirect System
