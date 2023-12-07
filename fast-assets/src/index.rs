@@ -28,8 +28,11 @@ impl Index {
     }
 
     pub fn save_as_file(&self, filename: &str) -> std::io::Result<()> {
-
-        let mut output = std::fs::File::options().write(true).truncate(true).create(true).open(filename)?;
+        let mut output = std::fs::File::options()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(filename)?;
 
         for file in self.files.iter() {
             let mut line = String::new();
@@ -60,8 +63,10 @@ impl Index {
         content.entries().for_each(|entry| {
             if entry.0 == "redirect" {
                 for redirect in entry.1.entries() {
-                    let origin =  self.get_path(redirect.0).expect("Missing file in index");
-                    let target = self.get_path(redirect.1.as_str().unwrap()).expect("Missing file in index");
+                    let origin = self.get_path(redirect.0).expect("Missing file in index");
+                    let target = self
+                        .get_path(redirect.1.as_str().unwrap())
+                        .expect("Missing file in index");
 
                     self.add_redirect(origin.as_str(), target.as_str());
                 }
@@ -150,9 +155,10 @@ impl Index {
     }
 
     pub fn get_redirect(&self, filename: &str) -> Option<String> {
-
         for redirect in self.redirect_list.iter() {
-            if redirect.0.file_name().unwrap().to_string_lossy() == filename || redirect.0.to_string_lossy() == filename {
+            if redirect.0.to_string_lossy() == filename
+                || redirect.0.file_name().unwrap().to_string_lossy() == filename
+            {
                 return Some(redirect.1.to_string_lossy().to_string());
             }
         }
@@ -171,7 +177,10 @@ impl Index {
 
         self.files.par_iter().for_each(|path| {
             let mut result = result.lock().unwrap();
-            if path.file_name().unwrap().to_string_lossy() == filename || path.to_string_lossy() == filename {
+            println!("paht cmp: {}/{}", path.to_string_lossy(), filename);
+            if path.to_string_lossy() == filename
+                || path.file_name().unwrap().to_string_lossy() == filename
+            {
                 *result = Some(path.to_string_lossy().to_string());
             }
         });
@@ -205,10 +214,8 @@ impl Index {
                 }
                 false
             }
-            None => {
-                false
-            }
-        }
+            None => false,
+        };
     }
 
     pub fn regex_search(&self, filter: &str) -> Vec<PathBuf> {

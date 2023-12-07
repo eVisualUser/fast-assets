@@ -6,7 +6,8 @@
 ⚠️ Warning: the file will be downloaded each call.
 
 ```rust
-let mut asset_manager = manager::AssetsManager::default();
+let mut asset_manager = crate::manager::AssetsManager::default();
+asset_manager.load("https://www.rust-lang.org/").unwrap();
 let downloaded_file = asset_manager.get("https://www.rust-lang.org/");
 
 let content = match downloaded_file {

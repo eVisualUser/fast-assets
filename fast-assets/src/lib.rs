@@ -46,6 +46,7 @@ mod test {
     #[test]
     pub fn get_distant_file_using_asset_manager() {
         let mut asset_manager = crate::manager::AssetsManager::default();
+        asset_manager.load("https://www.rust-lang.org/").unwrap();
         let downloaded_file = asset_manager.get("https://www.rust-lang.org/");
 
         let content = match downloaded_file {

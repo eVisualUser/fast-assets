@@ -10,6 +10,7 @@ pub struct File {
     pub from_archive: bool,
     pub path: PathBuf,
     pub data: Option<Vec<u8>>,
+    pub downloaded: bool,
 }
 
 impl File {
@@ -31,20 +32,25 @@ impl File {
     }
 
     pub fn save(&mut self) -> std::io::Result<()> {
-        let mut file = std::fs::File::options()
-            .write(true)
-            .truncate(true)
-            .create(true)
-            .open(self.path.clone())?;
-        match &self.data {
-            Some(data) => {
-                file.write_all(data.as_slice())?;
-                file.flush()?;
+        if !self.downloaded {
+            let mut file = std::fs::File::options()
+                .write(true)
+                .truncate(true)
+                .create(true)
+                .open(self.path.clone())?;
+            match &self.data {
+                Some(data) => {
+                    file.write_all(data.as_slice())?;
+                    file.flush()?;
+                }
+                None => (),
             }
-            None => (),
-        }
 
-        Ok(())
+            Ok(())
+        } else {
+            println!("You cannot save a downloaded file using the asset manager.");
+            Ok(())
+        }
     }
 }
 
@@ -134,6 +140,33 @@ impl AssetsManager {
     }
 
     pub fn load(&mut self, base_path: &str) -> std::io::Result<()> {
+        if (base_path.starts_with("http://") || base_path.starts_with("https://"))
+            && self.downloader.can_download(&base_path)
+        {
+            self.downloader.download_sync(
+                base_path.to_string(),
+                String::from("FastAssetAutoDownload_temp.tmp"),
+            );
+            let downloaded_content = std::fs::read("FastAssetAutoDownload_temp.tmp");
+            match downloaded_content {
+                Err(err) => {
+                    println!("Error while reading downloaded file: {}", err);
+                }
+                Ok(content) => {
+                    let file_path = PathBuf::from(base_path);
+                    let new_file = File {
+                        from_archive: false,
+                        path: file_path.clone(),
+                        data: Some(content),
+                        downloaded: true,
+                    };
+                    self.index.files.push(file_path);
+                    self.files.push(new_file);
+                    return Ok(());
+                }
+            }
+        }
+
         let mut path;
         if !(base_path.contains('\\') || base_path.contains('/')) {
             path = self.index.get_path(base_path);
@@ -279,28 +312,14 @@ impl AssetsManager {
     }
 
     pub fn get(&mut self, path: &str) -> Option<Vec<u8>> {
-        if (path.contains("http://") || path.contains("https://"))
-            && self.downloader.can_download(&path)
-        {
-            self.downloader.download_sync(
-                path.to_string(),
-                String::from("FastAssetAutoDownload_temp.tmp"),
-            );
-            let downloaded_content = std::fs::read("FastAssetAutoDownload_temp.tmp");
-            match downloaded_content {
-                Err(err) => {
-                    println!("Error while reading downloaded file: {}", err);
-                    return None;
-                }
-                Ok(content) => return Some(content),
-            }
-        }
-
         let in_cache = self.cache.get_data(path);
         return match in_cache {
             Some(_) => in_cache,
             None => {
-                let path = self.index.get_path(path).unwrap();
+                let path = self
+                    .index
+                    .get_path(path)
+                    .expect(&format!("Cannot get path of: {}", path));
                 let index;
                 if path.contains('\\') || path.contains('/') {
                     index = self.find_file_index_using_full_path(path.as_str());
