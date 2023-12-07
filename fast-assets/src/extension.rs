@@ -1,8 +1,8 @@
 use crate::decompression_manager::DecompressionManager;
 use crate::manager::AssetsManager;
+use std::any::Any;
 use std::fmt::Debug;
 use std::path::PathBuf;
-use std::any::Any;
 
 pub trait Extension: Debug {
     /// Return the data of the process pass

@@ -1,9 +1,9 @@
 pub mod decompression_manager;
 pub mod dependencie_manager;
+pub mod downloader;
+pub mod extension;
 pub mod index;
 pub mod manager;
-pub mod extension;
-pub mod downloader;
 
 #[cfg(test)]
 mod test {
@@ -13,7 +13,10 @@ mod test {
     pub fn get_cargo_toml_path_index() {
         let mut index = crate::index::Index::new("./", "Cargo.toml");
         index.search();
-        assert_eq!(index.get_path("./Cargo.toml"), Some(String::from("./Cargo.toml")));
+        assert_eq!(
+            index.get_path("./Cargo.toml"),
+            Some(String::from("./Cargo.toml"))
+        );
     }
 
     #[test]
@@ -22,7 +25,10 @@ mod test {
         index.set_csv_separator('/');
         index.search();
         index.add_from_file("test_resources/index.csv");
-        assert_eq!(index.get_path("Cargo.toml"), Some(String::from("Cargo.toml")));
+        assert_eq!(
+            index.get_path("Cargo.toml"),
+            Some(String::from("Cargo.toml"))
+        );
     }
 
     #[test]
@@ -31,7 +37,10 @@ mod test {
         index.set_csv_separator('/');
         index.search();
         index.add_from_file("test_resources/index.csv");
-        assert_eq!(index.get_path("index.json"), Some(String::from("index/index.zip/index.json")));
+        assert_eq!(
+            index.get_path("index.json"),
+            Some(String::from("index/index.zip/index.json"))
+        );
     }
 
     #[test]
@@ -81,7 +90,10 @@ mod test {
         index.search();
         index.add_from_file("test_resources/index.csv");
         index.add_redirect_from_file("test_resources/redirect.json");
-        assert_eq!(index.get_path("Cargo.toml"), Some(String::from("other.toml")));
+        assert_eq!(
+            index.get_path("Cargo.toml"),
+            Some(String::from("other.toml"))
+        );
     }
 
     #[test]
@@ -172,14 +184,24 @@ mod test {
         manager.create_file("demoFile.txt").unwrap();
         assert_ne!(manager.index.get_path("demoFile.txt"), None);
 
-        manager.copy_file("demoFile.txt", "index/demoFile.txt").unwrap();
-        assert_eq!(manager.index.get_path("demoFile.txt"), Some(String::from("index/demoFile.txt")));
+        manager
+            .copy_file("demoFile.txt", "index/demoFile.txt")
+            .unwrap();
+        assert_eq!(
+            manager.index.get_path("demoFile.txt"),
+            Some(String::from("index/demoFile.txt"))
+        );
 
         let path = PathBuf::from("index/demoFile.txt");
         assert!(path.exists());
 
-        manager.move_file("index/demoFile.txt", "demoFile.txt").unwrap();
-        assert_eq!(manager.index.get_path("demoFile.txt"), Some(String::from("demoFile.txt")));
+        manager
+            .move_file("index/demoFile.txt", "demoFile.txt")
+            .unwrap();
+        assert_eq!(
+            manager.index.get_path("demoFile.txt"),
+            Some(String::from("demoFile.txt"))
+        );
 
         assert!(!path.exists());
 
@@ -206,6 +228,9 @@ mod test {
 
         manager.load("demoFile.txt").unwrap();
         manager.set_data("demoFile.txt", b"Hello, World!".to_vec());
-        assert_eq!(String::from_utf8(manager.get_mut("demoFile.txt").unwrap().clone().unwrap()).unwrap(), String::from("Hello, World!"));
+        assert_eq!(
+            String::from_utf8(manager.get_mut("demoFile.txt").unwrap().clone().unwrap()).unwrap(),
+            String::from("Hello, World!")
+        );
     }
 }

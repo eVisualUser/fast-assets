@@ -1,5 +1,5 @@
-use std::io::Write;
 use curl::easy::Easy;
+use std::io::Write;
 
 /// It have all features to support web download using Curl
 #[derive(Default)]
@@ -9,17 +9,21 @@ impl Downloader {
     pub fn new() -> Self {
         Self::default()
     }
-    
+
     pub async fn download(&self, url: String, output: String) {
         let mut easy = Easy::new();
         match easy.url(&url) {
             Err(err) => {
-                    eprintln!("ERROR Downloader(Curl): {:?}", err);
+                eprintln!("ERROR Downloader(Curl): {:?}", err);
             }
             _ => (),
         }
 
-        let file = std::fs::File::options().write(true).truncate(true).create(true).open(&output);
+        let file = std::fs::File::options()
+            .write(true)
+            .truncate(true)
+            .create(true)
+            .open(&output);
         let mut file = match file {
             Err(err) => {
                 panic!("ERROR Downloader(FS): {:?}", err);
@@ -35,23 +39,23 @@ impl Downloader {
             Ok(data.len())
         }) {
             Err(err) => {
-            eprintln!("ERROR Downloader(Curl): {:?}", err);
-        }
+                eprintln!("ERROR Downloader(Curl): {:?}", err);
+            }
             _ => (),
         }
-            
+
         match transfer.perform() {
             Err(err) => {
                 eprintln!("ERROR Downloader(Curl): {:?}", err);
             }
-               _ => (),
+            _ => (),
         }
     }
-    
+
     pub fn download_sync(&self, url: String, output: String) {
         pollster::block_on(self.download(url, output));
     }
- 
+
     pub fn can_download(&self, target: &str) -> bool {
         let mut handle = Easy::new();
         match handle.url(target) {
@@ -61,6 +65,6 @@ impl Downloader {
         return match handle.perform() {
             Ok(_) => true,
             _ => false,
-        }
+        };
     }
 }

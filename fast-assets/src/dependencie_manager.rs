@@ -22,7 +22,7 @@ impl DependencieManager {
     pub fn new() -> Self {
         Self::default()
     }
-    
+
     pub fn load_file(&mut self, assets_manager: &mut AssetsManager, filename: &str) {
         let mut data = assets_manager.get(filename);
         match data {

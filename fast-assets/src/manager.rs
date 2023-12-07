@@ -1,6 +1,6 @@
 use crate::decompression_manager::DecompressionManager;
-use crate::index::Index;
 use crate::extension::Extension;
+use crate::index::Index;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
@@ -99,7 +99,10 @@ impl AssetsManager {
     }
 
     pub fn create_file(&mut self, path: &str) -> std::io::Result<()> {
-        std::fs::File::options().create(true).write(true).open(path)?;
+        std::fs::File::options()
+            .create(true)
+            .write(true)
+            .open(path)?;
         self.index.add_file(PathBuf::from(path));
 
         Ok(())
@@ -251,7 +254,7 @@ impl AssetsManager {
     pub fn find_file_index(&self, filename: &str) -> Option<usize> {
         for i in 0..self.files.len() {
             if self.files[i].path.file_name().unwrap().to_string_lossy() == filename {
-                   return Some(i);
+                return Some(i);
             }
         }
         None
@@ -283,7 +286,7 @@ impl AssetsManager {
                 }
                 self.files[index.unwrap()].data.clone()
             }
-        }
+        };
     }
 
     pub fn get_ref(&mut self, path: &str) -> Option<&Option<Vec<u8>>> {

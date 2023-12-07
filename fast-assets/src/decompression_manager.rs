@@ -85,7 +85,7 @@ impl DecompressionManager {
     pub fn new() -> Self {
         Self::default()
     }
-    
+
     pub fn set_cache_location(&mut self, cache_location: &str) {
         self.cache_location = PathBuf::from(cache_location);
     }
