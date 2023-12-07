@@ -3,7 +3,7 @@
 ## (WIP) Version 0.1.7
 
 ### Now you can use a link in the AssetManager::Get(...) to download a file instead using the downloader:
-⚠️ Warning: the file will be download each call.
+⚠️ Warning: the file will be downloaded each call.
 
 ```rust
 let mut asset_manager = manager::AssetsManager::default();
