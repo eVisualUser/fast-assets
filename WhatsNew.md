@@ -1,6 +1,8 @@
 # What's New
 
-## (WIP) Version 0.1.7
+## Version 0.1.7
+
+This version add little changes to improve the ease of use and download support.
 
 ### Now you can use a link in the AssetManager::Get(...) to download a file instead using the downloader:
 

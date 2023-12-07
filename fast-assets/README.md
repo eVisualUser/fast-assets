@@ -3,6 +3,8 @@
 Easy to use assets manager, that can manage any kind of file by manipulating files as ```Vec<u8>```,
 it's made to fit in any software/game/framework.
 
+[What's new](https://github.com/eVisualUser/fast-assets/blob/main/WhatsNew.md)
+
 ## Features
 
 - [X] Search for files
@@ -97,213 +99,213 @@ manager.unload("text.csv", false);
 ```rust
 
 // Get all the files that matching the regex into a Vec<Pathbuf>
-let files = manager.get_files_matching_regex("\\w+\\.csv");
+  let files = manager.get_files_matching_regex("\\w+\\.csv");
 
-// Using it:
-manager.get(&files[0].file_name().unwrap().to_string_lossy());
+  // Using it:
+  manager.get(&files[0].file_name().unwrap().to_string_lossy());
 
-```
+  ```
 
-### Accessing Data
+  ### Accessing Data
 
-You must know that two things can fail:
+  You must know that two things can fail:
 
-- File not indexed
-- File not exists
+  - File not indexed
+  - File not exists
 
-So you need to pass through them to access the data:
+  So you need to pass through them to access the data:
 
-```rust
-manager.get("text.csv").unwrap().unwrap();
-manager.get_ref("text.csv").unwrap().unwrap();
-manager.get_mut("text.csv").unwrap().unwrap();
+  ```rust
+  manager.get("text.csv").unwrap().unwrap();
+  manager.get_ref("text.csv").unwrap().unwrap();
+  manager.get_mut("text.csv").unwrap().unwrap();
 
-// In the case where you have multiple file with the same name:
-manager.get("en/text.csv").unwrap();
-manager.get_ref("fr/text.csv").unwrap();
-manager.get_mut("it/text.csv").unwrap();
+  // In the case where you have multiple file with the same name:
+  manager.get("en/text.csv").unwrap();
+  manager.get_ref("fr/text.csv").unwrap();
+  manager.get_mut("it/text.csv").unwrap();
 
-// If you to set the data you can call:
-manager.set_data("text.csv", b"Hello, World!".to_vec());
-```
+  // If you to set the data you can call:
+  manager.set_data("text.csv", b"Hello, World!".to_vec());
+  ```
 
-If the file was put in the cache and will automatically reload it.
+  If the file was put in the cache and will automatically reload it.
 
-### Saving Data
+  ### Saving Data
 
-Only saves data of files that are not from compressed files.
-Return a simple std::io::Result<()> as result.
-If the file does not exist anymore it will create a new file.
+  Only saves data of files that are not from compressed files.
+  Return a simple std::io::Result<()> as result.
+  If the file does not exist anymore it will create a new file.
 
-```rust
-manager.save("text.csv").unwrap();
-```
+  ```rust
+  manager.save("text.csv").unwrap();
+  ```
 
-### Remove a file reference
+  ### Remove a file reference
 
-In the manager and DecompressionManager each file loaded will have its reference, but they use memory, so to do a complete unload you need to remove them.
-For the cached files, they will have their cache file removed (based on the trait Drop).
+  In the manager and DecompressionManager each file loaded will have its reference, but they use memory, so to do a complete unload you need to remove them.
+  For the cached files, they will have their cache file removed (based on the trait Drop).
 
-```rust
-manager.remove("text.csv").unwrap().unwrap();
+  ```rust
+  manager.remove("text.csv").unwrap().unwrap();
 
-// Tips: You don't need to unload before excepted if you need to put in cache
-```
+  // Tips: You don't need to unload before excepted if you need to put in cache
+  ```
 
-### Dependencies Checker
+  ### Dependencies Checker
 
-The dependency checker (DependencieManager), the goal is to search the not indexed files in the manager.
+  The dependency checker (DependencieManager), the goal is to search the not indexed files in the manager.
 
-#### JSON File source
+  #### JSON File source
 
-As you can see in the example below, the JSON file defines the dependencies for some files.
-The organization of the JSON file is not recursive, so you cannot define the dependencies of a file into the dependencies of another file.
+  As you can see in the example below, the JSON file defines the dependencies for some files.
+  The organization of the JSON file is not recursive, so you cannot define the dependencies of a file into the dependencies of another file.
 
-```json
-{
-  "dependencies": {
-    "text.csv": [
+  ```json
+  {
+    "dependencies": {
+      "text.csv": [
       "index.json",
       "other.csv"
-    ],
-    "index.json": [
+      ],
+      "index.json": [
       "text.csv"
-    ]
+      ]
+    }
   }
-}
-```
+  ```
 
-#### Initialize the dependencies
+  #### Initialize the dependencies
 
-```rust
-// Create DependencieManager object
-let mut dependencie_manager = DependencieManager::default();
-// Load a file containing the dependencies required
-dependencie_manager.load_file(&mut manager, "deps.json");
-```
+  ```rust
+  // Create DependencieManager object
+  let mut dependencie_manager = DependencieManager::default();
+  // Load a file containing the dependencies required
+  dependencie_manager.load_file(&mut manager, "deps.json");
+  ```
 
-#### Let's check the dependencies
+  #### Let's check the dependencies
 
-Now you have to load the dependencies, and to check them you need to call three commands:
+  Now you have to load the dependencies, and to check them you need to call three commands:
 
-- update
-- check_if_valid
-- get_missing_dependencies
+  - update
+  - check_if_valid
+  - get_missing_dependencies
 
-```rust
+  ```rust
 
-// Take a look in the manager to get if a dependency is missing
-dependencie_manager.update(&mut manager);
-// Return true if all dependencies are present
-dependencie_manager.check_if_valid("text.csv");
-// Get all the missing dependencies
-dependencie_manager.get_missing_dependencies("text.csv");
-```
+  // Take a look in the manager to get if a dependency is missing
+  dependencie_manager.update(&mut manager);
+  // Return true if all dependencies are present
+  dependencie_manager.check_if_valid("text.csv");
+  // Get all the missing dependencies
+  dependencie_manager.get_missing_dependencies("text.csv");
+  ```
 
-### Extension
+  ### Extension
 
-This is an easy way to add custom features.
-It targets to let you add support for new compression formats...
+  This is an easy way to add custom features.
+  It targets to let you add support for new compression formats...
 
-#### Create an Extension
+  #### Create an Extension
 
-An Extension is a trait that adds the following functions:
+  An Extension is a trait that adds the following functions:
 
-```rust
-/// Called when loading a file, and return true if continue the existing process
-fn on_load(&mut self, _: &mut AssetsManager, path: &mut Option<String>) -> bool;
+  ```rust
+  /// Called when loading a file, and return true if continue the existing process
+  fn on_load(&mut self, _: &mut AssetsManager, path: &mut Option<String>) -> bool;
 
-/// Called when unloading a file, and return true if continue the existing process
-fn on_unload(&mut self, _: &mut AssetsManager, path: &mut &str, use_cache: &mut bool);
+    /// Called when unloading a file, and return true if continue the existing process
+    fn on_unload(&mut self, _: &mut AssetsManager, path: &mut &str, use_cache: &mut bool);
 
-/// Called when remove a file reference, and return true if continue the existing process
-fn on_remove(&mut self, _: &mut AssetsManager, path: &mut &str) -> bool;
+    /// Called when remove a file reference, and return true if continue the existing process
+    fn on_remove(&mut self, _: &mut AssetsManager, path: &mut &str) -> bool;
 
-/// Called when loading file/files from archive
-fn on_archive(&mut self, _: &mut DecompressionManager, ext: &str, path: &str);
-```
+    /// Called when loading file/files from archive
+    fn on_archive(&mut self, _: &mut DecompressionManager, ext: &str, path: &str);
+    ```
 
-#### Add it to the AssetsManager
+    #### Add it to the AssetsManager
 
-```rust
-let my_extension = MyExtension::default();
+    ```rust
+    let my_extension = MyExtension::default();
 
-manager.add_extension(Box::new(my_extension));
-```
+    manager.add_extension(Box::new(my_extension));
+    ```
 
-### Redirect System
+    ### Redirect System
 
-Sometimes it's useful to specify a path and in background the assets manager use the good file path.
-So it's implemented.
+    Sometimes it's useful to specify a path and in background the assets manager use the good file path.
+    So it's implemented.
 
-#### Add redirect
+    #### Add redirect
 
-##### From simple command
+    ##### From simple command
 
-```rust
-index.add_redirect("base_path", "new_path");
-```
+    ```rust
+    index.add_redirect("base_path", "new_path");
+    ```
 
-##### From file
+    ##### From file
 
-```json
-{
-  "redirect": {
-    "base_path": "new_path"
-  }
-}
-```
+    ```json
+    {
+      "redirect": {
+        "base_path": "new_path"
+      }
+    }
+    ```
 
-```rust
-index.add_redirect_from_file("redirect.json");
-```
+    ```rust
+    index.add_redirect_from_file("redirect.json");
+    ```
 
-### Downloader
+    ### Downloader
 
-```rust
-// Create an instance of the downloader
-let downloader = crate::downloader::Downloader::default();
+    ```rust
+    // Create an instance of the downloader
+    let downloader = crate::downloader::Downloader::default();
 
-// If you want prevent a download failure
-downloader.can_download("https://crates.io/assets/cargo.png");
-downloader.can_download("https://www.rust-lang.org/");
-downloader.can_download("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip");
+    // If you want prevent a download failure
+    downloader.can_download("https://crates.io/assets/cargo.png");
+    downloader.can_download("https://www.rust-lang.org/");
+    downloader.can_download("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip");
 
-// Here using _sync method version to not have to handle the async.
-// All errors produced will be output in the console.
-downloader.download_sync(String::from("https://crates.io/assets/cargo.png"), String::from("crates.png"));
-downloader.download_sync(String::from("https://www.rust-lang.org/"), String::from("rust_lang.html"));
-downloader.download_sync(String::from("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip"), String::from("HelloWorld.zip"));
-```
+    // Here using _sync method version to not have to handle the async.
+    // All errors produced will be output in the console.
+    downloader.download_sync(String::from("https://crates.io/assets/cargo.png"), String::from("crates.png"));
+    downloader.download_sync(String::from("https://www.rust-lang.org/"), String::from("rust_lang.html"));
+    downloader.download_sync(String::from("https://github.com/eVisualUser/bellecour-gamebook/blob/main/hello_world/hello_world.zip"), String::from("HelloWorld.zip"));
+    ```
 
-### Easy File move/copy/remove
+    ### Easy File move/copy/remove
 
-There is few useful methods to control your file, and update the index as well.
+    There is few useful methods to control your file, and update the index as well.
 
-#### Create a File
+    #### Create a File
 
-```rust
-// Create the file and add it to the index
-manager.create_file("myFile.txt");
-```
+    ```rust
+    // Create the file and add it to the index
+    manager.create_file("myFile.txt");
+    ```
 
-#### Copy a file
+    #### Copy a file
 
-```rust
-// Copy the file to another location
-manager.copy_file("myFile.txt", "folder/myFile.txt");
-```
+    ```rust
+    // Copy the file to another location
+    manager.copy_file("myFile.txt", "folder/myFile.txt");
+    ```
 
-#### Move a file
+    #### Move a file
 
-```rust
-// Copy the file and remove the original
-manager.move_file("myFile.txt", "folder/myFile.txt");
-```
+    ```rust
+    // Copy the file and remove the original
+    manager.move_file("myFile.txt", "folder/myFile.txt");
+    ```
 
-#### Remove a file
+    #### Remove a file
 
-```rust
-// Remove a file from the index and from the directory
-manager.remove_file("myFile.txt");
-```
+    ```rust
+    // Remove a file from the index and from the directory
+    manager.remove_file("myFile.txt");
+    ```
