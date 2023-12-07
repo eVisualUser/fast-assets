@@ -3,6 +3,8 @@
 Easy to use assets manager, that can manage any kind of file by manipulating files as ```Vec<u8>```,
 it's made to fit in any software/game/framework.
 
+[What's new](./WhatsNew.md)
+
 ## Features
 
 - [X] Search for files

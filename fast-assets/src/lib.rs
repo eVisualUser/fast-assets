@@ -45,16 +45,13 @@ mod test {
 
     #[test]
     pub fn get_distant_file_using_asset_manager() {
-        let mut asset_manager = crate::manager::AssetsManager::new(
-            crate::index::Index::new("./", ""),
-            crate::decompression_manager::DecompressionManager::default(),
-        );
+        let mut asset_manager = crate::manager::AssetsManager::default();
         let downloaded_file = asset_manager.get("https://www.rust-lang.org/");
-        let mut content = String::from("");
-        match downloaded_file {
-            None => (),
-            Some(new_content) => content = String::from_utf8(new_content).unwrap(),
-        }
+
+        let content = match downloaded_file {
+            None => String::from(""),
+            Some(new_content) => String::from_utf8(new_content).unwrap(),
+        };
 
         println!("File content: {}", content);
 
