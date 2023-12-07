@@ -58,6 +58,12 @@ pub struct AssetsManager {
     downloader: Downloader,
 }
 
+impl Default for AssetsManager {
+    fn default() -> Self {
+        return Self::new(Index::new("./", ""), DecompressionManager::default());
+    }
+}
+
 impl AssetsManager {
     pub fn new(index: Index, cache: DecompressionManager) -> Self {
         Self {
