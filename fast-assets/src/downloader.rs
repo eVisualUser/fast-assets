@@ -2,7 +2,7 @@ use curl::easy::Easy;
 use std::io::Write;
 
 /// It have all features to support web download using Curl
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Downloader {}
 
 impl Downloader {

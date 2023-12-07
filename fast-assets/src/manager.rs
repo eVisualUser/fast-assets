@@ -1,4 +1,5 @@
 use crate::decompression_manager::DecompressionManager;
+use crate::downloader::Downloader;
 use crate::extension::Extension;
 use crate::index::Index;
 use std::io::{Read, Write};
@@ -54,6 +55,7 @@ pub struct AssetsManager {
     files: Vec<File>,
     pub extension_list: Vec<Box<dyn Extension>>,
     compression_formats: Vec<String>,
+    downloader: Downloader,
 }
 
 impl AssetsManager {
@@ -64,6 +66,7 @@ impl AssetsManager {
             files: Vec::new(),
             extension_list: Vec::new(),
             compression_formats: vec![String::from("zip")],
+            downloader: Downloader::default(),
         }
     }
 
@@ -270,6 +273,23 @@ impl AssetsManager {
     }
 
     pub fn get(&mut self, path: &str) -> Option<Vec<u8>> {
+        if (path.contains("http://") || path.contains("https://"))
+            && self.downloader.can_download(&path)
+        {
+            self.downloader.download_sync(
+                path.to_string(),
+                String::from("FastAssetAutoDownload_temp.tmp"),
+            );
+            let downloaded_content = std::fs::read("FastAssetAutoDownload_temp.tmp");
+            match downloaded_content {
+                Err(err) => {
+                    println!("Error while reading downloaded file: {}", err);
+                    return None;
+                }
+                Ok(content) => return Some(content),
+            }
+        }
+
         let in_cache = self.cache.get_data(path);
         return match in_cache {
             Some(_) => in_cache,

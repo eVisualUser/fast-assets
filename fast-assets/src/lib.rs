@@ -44,6 +44,24 @@ mod test {
     }
 
     #[test]
+    pub fn get_distant_file_using_asset_manager() {
+        let mut asset_manager = crate::manager::AssetsManager::new(
+            crate::index::Index::new("./", ""),
+            crate::decompression_manager::DecompressionManager::default(),
+        );
+        let downloaded_file = asset_manager.get("https://www.rust-lang.org/");
+        let mut content = String::from("");
+        match downloaded_file {
+            None => (),
+            Some(new_content) => content = String::from_utf8(new_content).unwrap(),
+        }
+
+        println!("File content: {}", content);
+
+        assert!(content != "", "Failed to download the file.");
+    }
+
+    #[test]
     pub fn get_data() {
         let mut index = crate::index::Index::new("./", "____________");
         index.set_csv_separator('/');
